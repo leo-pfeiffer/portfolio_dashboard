@@ -1,20 +1,37 @@
 import requests
 import json
+import logging
 import getpass
 from datetime import datetime
 from collections import defaultdict
+from settings import paths
 
 
 class degiro:
     def __init__(self):
         self.user = dict()
         self.data = None
+        self.sess = None
+        self.sessid = None
 
     def login(self, conf_path=None, with2fa: bool = False):
-        if conf_path is None:
+        logging.basicConfig(filename='logs/degiro_login.log', level=logging.INFO, filemode='w')  # todo: take out filemd
+        logging.info(datetime.strftime(datetime.now(), format='%H:%M:%S %Y-%m-%d'))
+
+        if (conf_path is None) | (conf_path is False) | ((type(conf_path) is not bool) & (type(conf_path) is not str)):
             conf = dict(username=input("Username: "), password=getpass.getpass())
-        else:
+
+        elif (type(conf_path) is bool) & (conf_path is True):
+            conf_path = paths.BASE + paths.SETTINGS + '/config.json'
             conf = json.load(open(conf_path))
+
+        elif type(conf_path) is str:
+            try:
+                conf = json.load(open(conf_path))
+            except FileNotFoundError:
+                print("File not found. Please enter credentials manually.")
+                conf = dict(username=input("Username: "), password=getpass.getpass())
+
         self.sess = requests.Session()
 
         # Login
@@ -25,21 +42,23 @@ class degiro:
                    'isRedirectToMobile': False}
         header = {'content-type': 'application/json'}
 
-        if (with2fa):
+        if with2fa:
             payload['oneTimePassword'] = getpass.getpass("2FA Token: ")
             url += '/totp'
+
         r = self.sess.post(url, headers=header, data=json.dumps(payload))
-        print('Login')
-        print('\tStatus code: {}'.format(r.status_code))
+
+        logging.info("Login.")
+        logging.info('Status code: {}'.format(r.status_code))
 
         # Get session id
         self.sessid = r.headers['Set-Cookie']
         self.sessid = self.sessid.split(';')[0]
         self.sessid = self.sessid.split('=')[1]
 
-        print('\tSession id: {}'.format(self.sessid))
+        logging.info('Session id: {}'.format(self.sessid))
 
-    # This contain loads of user data, main interest here is the 'intAccount'
+    # This contain loads of user data, main interest here is the 'intAccount' -> also contains personal data
     def getConfig(self):
         url = 'https://trader.degiro.nl/pa/secure/client'
         payload = {'sessionId': self.sessid}
@@ -50,8 +69,17 @@ class degiro:
 
         data = r.json()
         self.user['intAccount'] = data['data']['intAccount']
-
-        print('\tAccount id: {}'.format(self.user['intAccount']))
+        self.user['username'] = data['data']['username']
+        self.user['email'] = data['data']['email']
+        self.user['firstName'] = data['data']['firstContact']['firstName']
+        self.user['lastName'] = data['data']['firstContact']['lastName']
+        self.user['dateOfBirth'] = data['data']['firstContact']['dateOfBirth']
+        self.user['streetAddress'] = data['data']['address']['streetAddress']
+        self.user['streetAddressNumber'] = data['data']['address']['streetAddressNumber']
+        self.user['zip'] = data['data']['address']['zip']
+        self.user['city'] = data['data']['address']['city']
+        self.user['bic'] = data['data']['bankAccount']['bic']
+        self.user['iban'] = data['data']['bankAccount']['iban']
 
     # This gets a lot of data, orders, news, portfolio, cash funds etc.
     def getData(self):
@@ -76,7 +104,7 @@ class degiro:
 
     # Get the cash funds
     def getCashFunds(self):
-        if self.data == None:
+        if self.data is None:
             self.getData()
         cashFunds = dict()
         for cf in self.data['cashFunds']['value']:
@@ -105,7 +133,7 @@ class degiro:
 
     # Returns the entire portfolio
     def getPortfolio(self):
-        if self.data == None:
+        if self.data is None:
             self.getData()
         portfolio = []
         for row in self.data['portfolio']['value']:
@@ -120,7 +148,7 @@ class degiro:
             if entry['size'] != 0:
                 portfolio.append(entry)
 
-        ## Restructure portfolio and add extra data
+        # Restructure portfolio and add extra data
         portf_n = defaultdict(dict)
         # Restructuring
         for r in portfolio:
@@ -169,7 +197,8 @@ class degiro:
             date = ''.join(rmov['date'].rsplit(':', 1))
             date = datetime.strptime(date, '%Y-%m-%dT%H:%M:%S%z')
             mov['date'] = date
-            mov['change'] = rmov['change']
+            if 'change' in rmov:
+                mov['change'] = rmov['change']
             mov['currency'] = rmov['currency']
             mov['description'] = rmov['description']
             mov['type'] = rmov['type']
@@ -213,4 +242,7 @@ class degiro:
 
 if __name__ == '__main__':
     deg = degiro()
-    deg.login(with2fa=True)
+    deg.login(conf_path=True, with2fa=True)
+    deg.getConfig()
+    deg.getAccountOverview(fromDate='01/04/2020', toDate='30/06/2020')
+    int(0)
