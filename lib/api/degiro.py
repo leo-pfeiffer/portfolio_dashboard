@@ -245,4 +245,3 @@ if __name__ == '__main__':
     deg.login(conf_path=True, with2fa=True)
     deg.getConfig()
     deg.getAccountOverview(fromDate='01/04/2020', toDate='30/06/2020')
-    int(0)
