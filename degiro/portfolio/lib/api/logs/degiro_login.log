@@ -1,0 +1,99 @@
+INFO:root:02:10:47 2020-07-04
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: 10CD714445D1B27E322F1942101FFE87.prod_a_113_4
+INFO:root:02:10:52 2020-07-04
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: CF717F2B2C68632CDF44322035E408FD.prod_a_113_4
+INFO:root:02:11:34 2020-07-04
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: DE4D38071BFF4A79A9C17B0D37C7D265.prod_a_113_4
+WARNING:django.request:Not Found: /portfolio/portfolio-overview/index.html
+INFO:root:02:11:44 2020-07-04
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: 250E73AFA01E9FF9363A543A0D66A4EA.prod_a_113_4
+INFO:root:02:11:47 2020-07-04
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: A05F3694E350A92FAB6D01F979AD385A.prod_a_113_4
+INFO:root:02:12:11 2020-07-04
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: B111BB016C45D8FADBD916FFBD5AFBAD.prod_a_113_4
+INFO:root:02:12:28 2020-07-04
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: F9E0DEB57709EA9CCC7CDB5723B484E5.prod_a_113_4
+INFO:root:02:12:33 2020-07-04
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: 20DD5D7852C148EAFFF08A1BBC92F970.prod_a_113_4
+INFO:root:02:12:37 2020-07-04
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: 7FFDBC03204E467EB0B1F22114A895DE.prod_a_113_4
+INFO:root:02:14:43 2020-07-04
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: 6CEB820CD337A41A234AF560E51A8D67.prod_a_113_4
+INFO:root:02:18:46 2020-07-04
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: 510F5301FEC684CDAE6F4133902FFCD8.prod_a_113_4
+WARNING:django.request:Not Found: /favicon.ico
+INFO:root:02:19:31 2020-07-04
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: 2101B7C8F94E562C351D777AEA59FFD2.prod_a_113_4
+INFO:root:02:22:00 2020-07-04
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: C436A16DBCB58FD2FE1F64403BF19382.prod_a_113_4
+INFO:root:02:25:37 2020-07-04
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: DC413637F9950CF2D05B2FFDF34E3E64.prod_a_113_4
+INFO:root:02:26:05 2020-07-04
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: A29EC1D220C38A3062D60C987910D284.prod_a_113_4
+INFO:root:02:27:05 2020-07-04
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: 7C24848E65EBF3BDAAC811D689C5FDA6.prod_a_113_4
+WARNING:django.request:Not Found: /portfolio/pie-chart/
+INFO:root:02:29:20 2020-07-04
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: BB5186EFEF5F99773E4DB6C4FCDD5F08.prod_a_113_4
+INFO:root:02:30:01 2020-07-04
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: FBF633ADC9B6D3C1F2C95641FA617C24.prod_a_113_4
+INFO:root:02:30:09 2020-07-04
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: 0373D16FBC1A330EA50EC07C2CDDBBD4.prod_a_113_4
+INFO:root:02:30:41 2020-07-04
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: 61EE94F6A9D31CA01813C51FB55C78FA.prod_a_113_4
+INFO:root:02:31:30 2020-07-04
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: 7BE5149AC5466D757687BD18DA6C4021.prod_a_113_4
+INFO:root:02:31:34 2020-07-04
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: AF698853AE09E044C23ADC09AB8B13F9.prod_a_113_4
+INFO:root:02:31:42 2020-07-04
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: EDA63AF4F41D7A83A22F699DE1B1BB4C.prod_a_113_4
+INFO:root:02:31:48 2020-07-04
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: ED71E32FE2CDBCD5069D138A4ED9D6A9.prod_a_113_4

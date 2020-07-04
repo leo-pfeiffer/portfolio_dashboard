@@ -1,4 +1,5 @@
 BASE = '/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro'
-LIB = '/lib'
+PORTFOLIO = BASE + '/portfolio'
+LIB = PORTFOLIO + '/lib'
 API = LIB + '/api'
 SETTINGS = API + '/settings'

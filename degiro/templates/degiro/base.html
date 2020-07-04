@@ -1,6 +1,77 @@
 {% load static %}
 <!doctype html>
 <html lang="en">
+    <!-- START OF HEADER-->
+    <head><meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+    * {box-sizing: border-box;}
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    .header {
+      overflow: hidden;
+      background-color: #009fdf;
+      padding: 20px 10px;
+    }
+
+    .header a {
+      float: left;
+      color: white;
+      text-align: center;
+      padding: 12px;
+      text-decoration: none;
+      font-size: 18px;
+      line-height: 25px;
+      border-radius: 4px;
+    }
+
+    .header a.logo {
+      font-size: 25px;
+      font-weight: bold;
+    }
+
+    .header a:hover {
+      background-color: white;
+      color: black;
+    }
+
+    .header a.active {
+      background-color: white;
+      color: black;
+    }
+
+    .header-right {
+      float: right;
+    }
+
+    @media screen and (max-width: 500px) {
+      .header a {
+        float: none;
+        display: block;
+        text-align: left;
+      }
+
+      .header-right {
+        float: none;
+      }
+    }
+    </style>
+    </head>
+    <body>
+
+    <div class="header">
+      <a href="/portfolio" class="logo">Degiro</a>
+      <div class="header-right">
+        <a class="active" href="/portfolio">Home</a>
+        <a href="#contact">Contact</a>
+        <a href="#about">About</a>
+      </div>
+    </div>
+    </body>
+    <!-- END OF HEADER -->
   <head>
   	<title>Degiro</title>
     <meta charset="utf-8">
@@ -18,16 +89,15 @@
 				</button>
 			</div>
 			<div class="p-4">
-				<h1><a href="index.html" class="logo">Degiro</a></h1>
 					<ul class="list-unstyled components mb-5">
 						<li class="active">
-							<a href="#"><span class="fa fa-home mr-3"></span> Home</a>
+							<a href="/portfolio"><span class="fa fa-home mr-3"></span> Home</a>
 						</li>
 						<li>
-							<a href="#"><span class="fa fa-user mr-3"></span> About</a>
+							<a href="/portfolio/portfolio-overview"><span class="fa fa-user mr-3"></span> Portfolio</a>
 						</li>
 						<li>
-							<a href="#"><span class="fa fa-briefcase mr-3"></span> Portfolio</a>
+							<a href="/portfolio/portfolio-allocation"><span class="fa fa-briefcase mr-3"></span> Allocation</a>
 						</li>
 						<li>
 							<a href="#"><span class="fa fa-sticky-note mr-3"></span> Blog</a>

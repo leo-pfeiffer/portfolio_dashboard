@@ -4,9 +4,11 @@ import logging
 import getpass
 from datetime import datetime
 from collections import defaultdict
-from api.settings import paths
+# from settings import paths # if used outside of django
+from .settings import paths # if used with django
 
-class degiro:
+
+class Degiro:
     def __init__(self):
         self.user = dict()
         self.data = None
@@ -14,14 +16,14 @@ class degiro:
         self.sessid = None
 
     def login(self, conf_path=None, with2fa: bool = False):
-        logging.basicConfig(filename='logs/degiro_login.log', level=logging.INFO, filemode='w')  # todo: take out filemd
+        logging.basicConfig(filename=paths.API+'/logs/degiro_login.log', level=logging.INFO, filemode='w')  # todo: take out filemd
         logging.info(datetime.strftime(datetime.now(), format='%H:%M:%S %Y-%m-%d'))
 
         if (conf_path is None) | (conf_path is False) | ((type(conf_path) is not bool) & (type(conf_path) is not str)):
             conf = dict(username=input("Username: "), password=getpass.getpass())
 
         elif (type(conf_path) is bool) & (conf_path is True):
-            conf_path = paths.BASE + paths.SETTINGS + '/config.json'
+            conf_path = paths.SETTINGS + '/config.json'
             conf = json.load(open(conf_path))
 
         elif type(conf_path) is str:
@@ -242,8 +244,9 @@ class degiro:
 
 
 if __name__ == '__main__':
-    deg = degiro()
+    deg = Degiro()
     deg.login(conf_path=True, with2fa=False)
+    int(0)
 
     # create portfolio dataframe:
     # df = pd.DataFrame(dict['PRODUCT'])
