@@ -24,8 +24,11 @@ def portfolio_allocation(request):
     })
 
 
-def portfolio_allocation2(request):
+def portfolio_overview(request):
     df = generate_portfolio_data().reset_index().rename(columns={'index': 'Symbol'}).to_dict('records')
     out = PortfolioTable(df)
     RequestConfig(request).configure(out)
     return render(request, 'portfolio/portfolio-overview.html', {'table': out})
+
+def portfolio_performance(request):
+    pass

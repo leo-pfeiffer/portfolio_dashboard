@@ -1,6 +1,7 @@
 import django_tables2 as tables
 import itertools
 
+
 class PortfolioTable(tables.Table):
     row_number = tables.Column(verbose_name="Row", empty_values=())
     Symbol = tables.Column(verbose_name="Symbol")
