@@ -30,5 +30,6 @@ def portfolio_overview(request):
     RequestConfig(request).configure(out)
     return render(request, 'portfolio/portfolio-overview.html', {'table': out})
 
+
 def portfolio_performance(request):
-    pass
+    return render(request, 'portfolio/portfolio-performance.html')
