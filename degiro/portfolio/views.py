@@ -1,6 +1,6 @@
 from django.views import generic
 from django.shortcuts import render
-from .lib.portfolioanalysis import generate_portfolio_data
+from .lib.degiro_helpers import generate_portfolio_data, get_transactions
 from .tables import PortfolioTable
 from django_tables2 import RequestConfig
 import numpy as np
@@ -11,6 +11,14 @@ class IndexView(generic.TemplateView):
 
     def get(self, request):
         return render(request, self.template_name)
+
+
+def refresh_portfolio(request):
+    """
+    Refresh depot data and update database.
+    """
+    date = 0 # todo: get last update date from db
+    transactions = get_transactions(date) # todo: get new transactions
 
 
 def portfolio_allocation(request):

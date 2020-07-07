@@ -2,7 +2,7 @@ import requests
 import json
 import logging
 import getpass
-from datetime import datetime
+from datetime import datetime, date
 from collections import defaultdict
 # from settings import paths # if used outside of django
 from .settings import paths # if used with django
@@ -215,6 +215,7 @@ class Degiro:
     # Returns historical transactions
     #  fromDate and toDate are strings in the format: dd/mm/yyyy
     def getTransactions(self, fromDate, toDate):
+        """Can only get chunks of size 13 ?"""
         url = 'https://trader.degiro.nl/reporting/secure/v4/transactions'
         payload = {'fromDate': fromDate,
                    'toDate': toDate,
@@ -246,11 +247,22 @@ class Degiro:
 if __name__ == '__main__':
     deg = Degiro()
     deg.login(conf_path=True, with2fa=False)
-    int(0)
 
     # create portfolio dataframe:
     # df = pd.DataFrame(dict['PRODUCT'])
     # df.columns = df.loc['isin',:].values
 
-    deg.getConfig()
-    deg.getAccountOverview(fromDate='01/04/2020', toDate='30/06/2020')
+    # deg.getConfig()
+    # data = deg.getTransactions(fromDate=date(2020, 6, 1).strftime(format="%d/%m/%Y"),
+    #                            toDate=date.today().strftime(format="%d/%m/%Y"))
+    # symbols = [x['productId'] for x in data]
+    # symbols_chunks = [symbols[i * 10:(i+1) * 10] for i in range((len(symbols) + 9) // 10)]
+    #
+    # product_ids = []
+    # for chunk in symbols_chunks:
+    #     dict_out = deg.getProductByIds(chunk)
+    #     product_ids.append([x['symbol'] for x in dict_out])
+    #
+    # product = deg.getProductByIds(symbols)
+    int(0)
+

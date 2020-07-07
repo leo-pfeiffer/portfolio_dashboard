@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+import datetime
 from .api.degiro import Degiro
 
 
@@ -24,3 +25,28 @@ def generate_portfolio_data():
     return df
 
 
+def get_transactions(date: datetime.date):
+    # date should be last date for which previous transactions are available
+    D = Degiro()
+    D.login(with2fa=False, conf_path=True)
+    D.getConfig()
+    date_as_string = date.strftime(fmt='%d/%m/%Y')
+    today = datetime.date.today().strftime(format="%d/%m/%Y")
+    transactions = D.getTransactions(fromDate=date_as_string, toDate=today)
+    product_ids = [x['productId'] for x in transactions]
+    return product_ids
+
+
+def get_info_by_productId(product_ids: list):
+    D = Degiro()
+    D.login(with2fa=False, conf_path=True)
+    D.getConfig()
+
+    chunks = [product_ids[i * 10:(i + 1) * 10] for i in range((len(product_ids) + 9) // 10)]
+
+    data_out = []
+
+    for chunk in chunks:
+        data_out.append(D.getProductByIds(chunk))
+
+    return data_out
