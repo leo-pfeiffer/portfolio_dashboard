@@ -1,3 +1,5 @@
+import re
+
 import pandas as pd
 import numpy as np
 import datetime
@@ -26,15 +28,20 @@ def generate_portfolio_data():
 
 
 def get_transactions(date: datetime.date):
-    # date should be last date for which previous transactions are available
+    """
+    Return transactions since date
+    """
     D = Degiro()
     D.login(with2fa=False, conf_path=True)
     D.getConfig()
-    date_as_string = date.strftime(fmt='%d/%m/%Y')
+    date_as_string = date.strftime(format='%d/%m/%Y')
     today = datetime.date.today().strftime(format="%d/%m/%Y")
     transactions = D.getTransactions(fromDate=date_as_string, toDate=today)
-    product_ids = [x['productId'] for x in transactions]
-    return product_ids
+    for dic in transactions:
+        regexed_date = re.compile(r'\d{4}-\d{2}-\d{2}').findall(dic['date'])[0]
+        dic['date'] = datetime.datetime.strptime(regexed_date, '%Y-%m-%d').date()
+
+    return transactions
 
 
 def get_info_by_productId(product_ids: list):
