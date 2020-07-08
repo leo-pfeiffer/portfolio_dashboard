@@ -7,6 +7,7 @@ from django_tables2 import RequestConfig
 from .models import Depot, Transactions
 import datetime
 from dateutil.relativedelta import relativedelta
+from collections import Counter
 import numpy as np
 import pandas as pd
 
@@ -23,13 +24,14 @@ def refresh_portfolio():
     """
     Refresh depot data and update database.
     """
+
     def get_last_portfolio():
         try:
             latest_date = Depot.objects.latest('date').date
             return {'latest_date': latest_date,
-                    'symbols': list(Depot.objects.values_list('symbol').filter(date=latest_date).values())}
+                    'latest_portfolio': [x for x in Depot.objects.values().filter(date=latest_date)]}
         except ObjectDoesNotExist:
-            return {'latest_date': datetime.date(2020, 1, 1), 'symbols': []}
+            return {'latest_date': datetime.date(2020, 1, 1), 'latest_portfolio': []}
 
     def update_transactions(transactions):
         """
@@ -37,7 +39,7 @@ def refresh_portfolio():
         """
         Transactions.objects.bulk_create([Transactions(**vals) for vals in transactions])
 
-    def assemble_portfolio(latest_symbols: list, latest_date: datetime.date, transactions):
+    def assemble_portfolio(last_portfolio: dict, latest_date: datetime.date, transactions):
         # todo: This doesn't work yet: Need to consider pieces in portfolio as well
         """
         Create all new daily portfolios since last update
@@ -48,38 +50,69 @@ def refresh_portfolio():
         transactions = [x for x in transactions if x['id'] not in existing_transactions]
         transactions_df = pd.DataFrame(transactions)
         today = datetime.date.today()
-        date_iterator = latest_date
-        portfolio_at_date = latest_symbols
+        date_iterator = latest_date - relativedelta(days=1)
+        portfolio_at_date = {x['symbol']: x['pieces'] for x in last_portfolio}
 
         while date_iterator <= today:
-            # todo: consider pieces
-            daily_buys = transactions_df[(transactions_df.date == date_iterator) &
-                                         (transactions_df.buysell == "B")].productId.values()
+            date_iterator = date_iterator + relativedelta(days=1)
+            print(date_iterator)
+            daily_buys = [t for t in transactions if t['buysell'] == 'B' and t['date'] == date_iterator]
 
-            daily_sells = transactions_df[(transactions_df.date == date_iterator) &
-                                          (transactions_df.buysell == "S")].productId.values()
+            daily_sells = [t for t in transactions if t['buysell'] == 'S' and t['date'] == date_iterator]
 
-            daily_buys_info = get_info_by_productId(daily_buys)
-            daily_sells_info = get_info_by_productId(daily_sells)
+            if len(daily_buys) == 0 and len(daily_sells) == 0:
+                continue
 
-            daily_buys_symbol = [x['symbol'] for x in daily_buys_info]
-            daily_sells_symbol = [x['symbol'] for x in daily_sells_info]
+            daily_buys_red = {}
+            daily_sells_red = {}
 
-            portfolio_at_date = list(set(portfolio_at_date).union(daily_buys_symbol))
-            portfolio_at_date = portfolio_at_date.remove(daily_sells_symbol)
+            if len(daily_buys) > 0:
+                daily_buys_info = get_info_by_productId([x['productId'] for x in daily_buys])
 
-            # todo: update model De
+                daily_buys_symbol = [{k: v['symbol']} for k, v in
+                                     zip(daily_buys_info[0].keys(), daily_buys_info[0].values())]
 
-            date_iterator += relativedelta(days=1)
+                daily_buys_symbol = {k: v for d in daily_buys_symbol for k, v in d.items()}
 
-    last_portfolio = get_last_portfolio()
-    last_symbols = last_portfolio['symbols']
-    latest_date = last_portfolio['latest_date']
+                daily_buys_red = [{k: v for k, v in x.items() if k in ['productId', 'quantity']} for x in daily_buys]
+
+                for x in daily_buys_red:
+                    x.update({'symbol': daily_buys_symbol[x['productId']]})
+                    del x['productId']
+
+                daily_buys_red = {x['symbol']: x['quantity'] for x in daily_buys_red}
+
+            if len(daily_sells) > 0:
+                daily_sells_info = get_info_by_productId([x['productId'] for x in daily_sells])
+
+                daily_sells_symbol = [{k: v['symbol']} for k, v in
+                                      zip(daily_sells_info[0].keys(), daily_sells_info[0].values())]
+
+                daily_sells_symbol = {k: v for d in daily_sells_symbol for k, v in d.items()}
+
+                daily_sells_red = [{k: v for k, v in x.items() if k in ['productId', 'quantity']} for x in daily_sells]
+
+                for x in daily_sells_red:
+                    x.update({'symbol': daily_sells_symbol[x['productId']]})
+                    del x['productId']
+
+                daily_sells_red = {x['symbol']: x['quantity'] for x in daily_sells_red}
+
+            portfolio_at_date = dict(Counter(portfolio_at_date) + Counter(daily_buys_red) + Counter(daily_sells_red))
+
+            upload = [{'symbol': k, 'pieces': v, 'date': date_iterator} for k, v in portfolio_at_date.items()]
+
+            Depot.objects.bulk_create([Depot(**vals) for vals in upload])
+            print('Successful upload')
+
+    last_portfolio_all = get_last_portfolio()
+    last_portfolio = last_portfolio_all['latest_portfolio']
+    last_portfolio = [{k: v for k, v in d.items() if k in ['symbol', 'pieces']} for d in last_portfolio]
+    latest_date = last_portfolio_all['latest_date']
+
     transactions = get_transactions(latest_date)
-    assemble_portfolio(last_symbols, latest_date, transactions)
+    assemble_portfolio(last_portfolio, latest_date, transactions)
     update_transactions(transactions)
-
-    #product_ids = [x['productId'] for x in transactions]
 
 
 def portfolio_allocation(request):
