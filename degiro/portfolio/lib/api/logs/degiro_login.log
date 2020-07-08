@@ -1,71 +1,8 @@
-INFO:root:10:25:44 2020-07-08
+INFO:root:10:40:28 2020-07-08
 INFO:root:Login.
 INFO:root:Status code: 200
-INFO:root:Session id: E8FFE342B149294CB2E199DB0C13A7C5.prod_a_113_4
-INFO:root:10:25:45 2020-07-08
+INFO:root:Session id: 7AAE26DDAE9091E0BED7B888A9CFE41C.prod_a_113_4
+INFO:root:10:40:33 2020-07-08
 INFO:root:Login.
 INFO:root:Status code: 200
-INFO:root:Session id: 813B8BD85E1CBA134A981F619D687BFB.prod_a_113_4
-INFO:root:10:25:45 2020-07-08
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: 6E7CBBE069E0E009E06C51F2F2ABEDD0.prod_a_113_4
-INFO:root:10:25:45 2020-07-08
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: 54BEC0150459BD3FEE65CD115904B366.prod_a_113_4
-INFO:root:10:25:46 2020-07-08
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: 8FDDD6D26BF83EED012FADEC3ACA1C4D.prod_a_113_4
-INFO:root:10:25:46 2020-07-08
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: E57E137F10452BF56111F6320A97E412.prod_a_113_4
-INFO:root:10:25:46 2020-07-08
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: A4372A101DDEBF9A8E71E67FCBDF25EF.prod_a_113_4
-INFO:root:10:25:47 2020-07-08
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: 06FA0942E74FDA065BEEE61B5CDFD707.prod_a_113_4
-INFO:root:10:25:47 2020-07-08
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: BA7F81D58348EDED7256E276F6B55266.prod_a_113_4
-INFO:root:10:25:47 2020-07-08
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: EDD5D8AA0BF5E98AD4411D5C25729D67.prod_a_113_4
-INFO:root:10:25:47 2020-07-08
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: EF47EC800DED3F6C7A7FB388183EFE95.prod_a_113_4
-INFO:root:10:25:48 2020-07-08
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: BD985D5B02DA9CB4ADDBF0BC8B68CB29.prod_a_113_4
-ERROR:django.request:Internal Server Error: /portfolio/
-Traceback (most recent call last):
-  File "/usr/local/lib/python3.7/site-packages/django/core/handlers/exception.py", line 34, in inner
-    response = get_response(request)
-  File "/usr/local/lib/python3.7/site-packages/django/core/handlers/base.py", line 115, in _get_response
-    response = self.process_exception_by_middleware(e, request)
-  File "/usr/local/lib/python3.7/site-packages/django/core/handlers/base.py", line 113, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "/usr/local/lib/python3.7/site-packages/django/views/generic/base.py", line 71, in view
-    return self.dispatch(request, *args, **kwargs)
-  File "/usr/local/lib/python3.7/site-packages/django/views/generic/base.py", line 97, in dispatch
-    return handler(request, *args, **kwargs)
-  File "/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/views.py", line 19, in get
-    refresh_portfolio()
-  File "/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/views.py", line 114, in refresh_portfolio
-    assemble_portfolio(last_portfolio, latest_date, transactions)
-  File "/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/views.py", line 70, in assemble_portfolio
-    daily_buys_info = get_info_by_productId([x['productId'] for x in daily_buys])
-  File "/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/lib/degiro_helpers.py", line 58, in get_info_by_productId
-    data_out.append(D.getProductByIds(chunk))
-  File "/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/lib/api/degiro.py", line 243, in getProductByIds
-    data = r.json()['data']
-KeyError: 'data'
+INFO:root:Session id: C8A4A1F22541FB7EB24BCCEE2336B3B7.prod_a_113_4

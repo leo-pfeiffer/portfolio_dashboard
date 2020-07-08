@@ -240,8 +240,14 @@ class Degiro:
         print(f'Get Products info for {ids}')
         print('\tStatus code: {}'.format(r.status_code))
 
-        data = r.json()['data']
-        return data
+        try:
+            data = r.json()['data']
+            return data
+        except KeyError:
+            print('\tKeyError: No data retrieved.')
+            return r.json()
+
+
 
 
 if __name__ == '__main__':
@@ -264,5 +270,10 @@ if __name__ == '__main__':
     #     product_ids.append([x['symbol'] for x in dict_out])
     #
     # product = deg.getProductByIds(symbols)
+    deg.getConfig()
+    for i in ['15885941', '14616228', '14616228', '15885941', '15964254']:
+        print(i)
+        deg.getProductByIds(i)
+
     int(0)
 

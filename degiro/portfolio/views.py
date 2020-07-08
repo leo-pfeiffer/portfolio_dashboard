@@ -16,7 +16,7 @@ class IndexView(generic.TemplateView):
     template_name = 'portfolio/index.html'
 
     def get(self, request):
-        refresh_portfolio()
+        # refresh_portfolio()   # todo: for some reason, I can't retrieve data after 26-05-2020. Overload?
         return render(request, self.template_name)
 
 
@@ -40,7 +40,6 @@ def refresh_portfolio():
         Transactions.objects.bulk_create([Transactions(**vals) for vals in transactions])
 
     def assemble_portfolio(last_portfolio: dict, latest_date: datetime.date, transactions):
-        # todo: This doesn't work yet: Need to consider pieces in portfolio as well
         """
         Create all new daily portfolios since last update
         """
@@ -48,9 +47,10 @@ def refresh_portfolio():
 
         # exclude duplicated transactions (e.g. from same day)
         transactions = [x for x in transactions if x['id'] not in existing_transactions]
-        transactions_df = pd.DataFrame(transactions)
+
         today = datetime.date.today()
         date_iterator = latest_date - relativedelta(days=1)
+
         portfolio_at_date = {x['symbol']: x['pieces'] for x in last_portfolio}
 
         while date_iterator <= today:
