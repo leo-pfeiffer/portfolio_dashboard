@@ -2,9 +2,145 @@
 {% block content %}
     <head>
         <title>Portfolio overview</title>
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+        <style>#chartdiv {width: 100%; height: 500px;}</style>
+
     </head>
-    <div id="container" style="margin-left: 2.5%">
-        <p>Hello world!</p>
-    </div>
+
+    <script src="https://www.amcharts.com/lib/4/core.js"></script>
+    <script src="https://www.amcharts.com/lib/4/charts.js"></script>
+    <script src="https://www.amcharts.com/lib/4/themes/animated.js"></script>
+    <script>
+        am4core.options.autoSetClassName = true;
+        // Themes begin
+        am4core.useTheme(am4themes_animated);
+        // Themes end
+
+        // Create chart
+        var chart = am4core.create("chartdiv", am4charts.XYChart);
+
+        var data = [];
+        var price1 = 1000, price2 = 1200;
+        var quantity = 30000;
+        for (var i = 0; i < 360; i++) {
+          price1 += Math.round((Math.random() < 0.5 ? 1 : -1) * Math.random() * 100);
+          data.push({ date1: new Date(2015, 0, i), price1: price1 });
+        }
+
+        chart.data = {{ data|safe }};
+        //chart.data = data;
+
+        var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+        dateAxis.renderer.grid.template.location = 0;
+        dateAxis.renderer.labels.template.fill = am4core.color("#4b4b4b");
+        dateAxis.renderer.labels.template.fontSize = 15;
+        dateAxis.renderer.grid.template.disabled = true;
+        dateAxis.renderer.ticks.template.disabled = false;
+        dateAxis.renderer.ticks.template.strokeOpacity = 1;
+        dateAxis.renderer.ticks.template.stroke = am4core.color("#888888");
+        dateAxis.renderer.ticks.template.strokeWidth = 0.75;
+        dateAxis.renderer.ticks.template.length = 6;
+        dateAxis.dateFormats.setKey("month", "MMM");
+        dateAxis.periodChangeDateFormats.setKey("month", "MMM");
+        dateAxis.tooltipDateFormat = "MM/dd";
+        dateAxis.tooltip.fontSize = 12;
+        dateAxis.tooltip.fontWeight = "lighter";
+        dateAxis.tooltip.stroke = am4core.color("#7d7d7d");
+        dateAxis.tooltip.background.fill = am4core.color("#ffffff");
+        dateAxis.tooltip.background.stroke = am4core.color("#ffffff");
+
+        var valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+        valueAxis.renderer.minWidth = 60;
+        valueAxis.renderer.labels.template.fontSize = 15;
+        valueAxis.cursorTooltipEnabled = false;
+
+        var series = chart.series.push(new am4charts.LineSeries());
+        series.name = "2015";
+        series.id = "s1"
+        series.dataFields.dateX = "date1";
+        series.dataFields.valueY = "price1";
+        series.tooltipText = "[bold]Interval:[/] {dateX.formatDate('MM/dd')}\n [bold]Price: [/]{valueY.value}";
+        series.tooltip.fontSize = 13;
+        series.tooltip.background.cornerRadius = 0;
+        series.tooltip.background.strokeOpacity = 0;
+        series.tooltip.pointerOrientation = "horizontal";
+        series.tooltip.getFillFromObject = false;
+        series.tooltip.background.fill = am4core.color("#4D4D4D");
+        series.tooltip.background.fillOpacity = 0.6;
+        series.stroke = am4core.color("#e59165");
+        series.fillOpacity = 1;
+        series.strokeWidth = 1.75;
+        series.showOnInit = false;
+        series.interpolationDuration = 0;
+
+        var gradient = new am4core.LinearGradient();
+         gradient.addColor(am4core.color("rgba(229,145,101,0.251)"));
+         gradient.addColor(am4core.color("rgba(229,145,101,0.049)"));
+         gradient.addColor(am4core.color("rgba(229,145,101,0.029)"));
+        series.fill = gradient;
+        gradient.rotation = 82.5;
+
+
+        var bullet = series.bullets.push(new am4charts.CircleBullet());
+          bullet.circle.stroke = am4core.color("#fff");
+          bullet.circle.strokeWidth = 2;
+          bullet.circle.fill = am4core.color("#e59165");
+          bullet.properties.fillOpacity = 0;
+          bullet.properties.strokeOpacity = 0;
+
+          var bulletState = bullet.states.create("hover");
+          bulletState.properties.fillOpacity = 1;
+          bulletState.properties.strokeOpacity = 1;
+
+
+        chart.cursor = new am4charts.XYCursor();
+        chart.cursor.xAxis = dateAxis.tooltipDate;
+        chart.cursor.lineY.disabled = true;
+
+        chart.scrollbarX = new am4charts.XYChartScrollbar();
+        chart.scrollbarX.series.push(series);
+        chart.scrollbarX.parent = chart.topAxesContainer;
+        chart.scrollbarX.dy = -15;
+        chart.scrollbarX.minHeight = 32;
+        chart.scrollbarX.unselectedOverlay.fillOpacity = 0.5;
+
+        function customizeThumb() {
+        var line = chart.scrollbarX.thumb.createChild(am4core.Rectangle);
+        line.height = 0.875;
+        line.width = am4core.percent(100);
+        line.fill = am4core.color("#999999");
+        line.valign = "bottom";
+        }
+
+        customizeThumb(chart.scrollbarX.thumb.background);
+
+        function customizeGrip(grip) {
+          // Remove default grip image
+          grip.icon.disabled = true;
+
+          // Disable background
+          grip.background.disabled = true;
+
+          // Add rotated rectangle as bi-di arrow
+            var img = grip.createChild(am4core.Circle);
+          img.width = 14;
+          img.height = 14;
+          img.fill = am4core.color("#989898");
+          img.stroke = am4core.color("#fff");
+          img.strokeWidth = 2;
+        }
+
+        customizeGrip(chart.scrollbarX.startGrip);
+        customizeGrip(chart.scrollbarX.endGrip);
+
+        chart.scrollbarX.startGrip.dy = 15;
+        chart.scrollbarX.endGrip.dy = 15;
+
+        var scrollSeries1 = chart.scrollbarX.scrollbarChart.series.getIndex(0);
+        scrollSeries1.filters.clear();
+        scrollSeries1.strokeOpacity = 0;
+        scrollSeries1.fillOpacity = 1;
+        scrollSeries1.fill = am4core.color("#e5e5e5");
+    </script>
+    <div id="chartdiv"></div>
+
 {% endblock %}

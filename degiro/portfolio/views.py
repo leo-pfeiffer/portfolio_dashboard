@@ -2,6 +2,7 @@ from django.views import generic
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from .lib.degiro_helpers import generate_portfolio_data, get_transactions, get_info_by_productId
+from .lib.yahoodata import get_yahoo_data
 from .tables import PortfolioTable
 from django_tables2 import RequestConfig
 from .models import Depot, Transactions
@@ -149,7 +150,16 @@ def portfolio_overview(request):
 
 def portfolio_performance(request):
     refresh_depot_data()
-    return render(request, 'portfolio/portfolio-performance.html')
+
+    # dummy data
+    financial_data = get_yahoo_data(['DOCU'], start="2020-01-01", end="2020-07-08")
+    prices = financial_data['prices'].to_frame().reset_index()
+    prices.columns = ['date1', 'price1']
+    data = prices.to_json(orient='records')
+
+    return render(request, 'portfolio/portfolio-performance.html', {
+        'data': data
+    })
 
 
 def portfolio_depot(request):
