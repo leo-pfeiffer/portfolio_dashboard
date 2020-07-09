@@ -18,16 +18,7 @@
         // Create chart
         var chart = am4core.create("chartdiv", am4charts.XYChart);
 
-        var data = [];
-        var price1 = 1000, price2 = 1200;
-        var quantity = 30000;
-        for (var i = 0; i < 360; i++) {
-          price1 += Math.round((Math.random() < 0.5 ? 1 : -1) * Math.random() * 100);
-          data.push({ date1: new Date(2015, 0, i), price1: price1 });
-        }
-
         chart.data = {{ data|safe }};
-        //chart.data = data;
 
         var dateAxis = chart.xAxes.push(new am4charts.DateAxis());
         dateAxis.renderer.grid.template.location = 0;
