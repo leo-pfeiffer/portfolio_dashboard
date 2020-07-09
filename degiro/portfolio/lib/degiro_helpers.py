@@ -41,11 +41,13 @@ def get_transactions(date: datetime.date):
         regexed_date = re.compile(r'\d{4}-\d{2}-\d{2}').findall(dic['date'])[0]
         dic['date'] = datetime.datetime.strptime(regexed_date, '%Y-%m-%d').date()
         dic['productId'] = str(dic['productId'])
+        dic['id'] = str(dic['id'])
 
     return transactions
 
 
 def get_info_by_productId(product_ids: list):
+    """Return list product info by productId. Input should be a list without dublicates!"""
     D = Degiro()
     D.login(with2fa=False, conf_path=True)
     D.getConfig()

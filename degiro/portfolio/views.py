@@ -16,11 +16,11 @@ class IndexView(generic.TemplateView):
     template_name = 'portfolio/index.html'
 
     def get(self, request):
-        # refresh_portfolio()   # todo: for some reason, I can't retrieve data after 26-05-2020. Overload?
+        refresh_depot_data()
         return render(request, self.template_name)
 
 
-def refresh_portfolio():
+def refresh_depot_data():
     """
     Refresh depot data and update database.
     """
@@ -33,6 +33,14 @@ def refresh_portfolio():
         except ObjectDoesNotExist:
             return {'latest_date': datetime.date(2020, 1, 1), 'latest_portfolio': []}
 
+    def exclude_existing_transactions(transactions):
+        """
+        exclude duplicated transactions (e.g. from same day)
+        """
+        existing_transactions = [x['id'] for x in list(Transactions.objects.all().values('id'))]
+
+        return [x for x in transactions if x['id'] not in existing_transactions]
+
     def update_transactions(transactions):
         """
         Upload new transactions to db
@@ -43,10 +51,9 @@ def refresh_portfolio():
         """
         Create all new daily portfolios since last update
         """
-        existing_transactions = [x['id'] for x in list(Transactions.objects.all().values('id'))]
 
-        # exclude duplicated transactions (e.g. from same day)
-        transactions = [x for x in transactions if x['id'] not in existing_transactions]
+        if len(transactions) == 0:
+            return None
 
         today = datetime.date.today()
         date_iterator = latest_date - relativedelta(days=1)
@@ -67,7 +74,10 @@ def refresh_portfolio():
             daily_sells_red = {}
 
             if len(daily_buys) > 0:
-                daily_buys_info = get_info_by_productId([x['productId'] for x in daily_buys])
+                daily_buys_info = get_info_by_productId(list(set([x['productId'] for x in daily_buys])))
+                # todo: take out the following: Bad error handling
+                if list(daily_buys_info[0].keys())[0] == 'errors':
+                    continue
 
                 daily_buys_symbol = [{k: v['symbol']} for k, v in
                                      zip(daily_buys_info[0].keys(), daily_buys_info[0].values())]
@@ -84,6 +94,9 @@ def refresh_portfolio():
 
             if len(daily_sells) > 0:
                 daily_sells_info = get_info_by_productId([x['productId'] for x in daily_sells])
+                # todo: take out the following: Bad error handling
+                if list(daily_sells_info[0].keys())[0] == 'errors':
+                    continue
 
                 daily_sells_symbol = [{k: v['symbol']} for k, v in
                                       zip(daily_sells_info[0].keys(), daily_sells_info[0].values())]
@@ -111,6 +124,7 @@ def refresh_portfolio():
     latest_date = last_portfolio_all['latest_date']
 
     transactions = get_transactions(latest_date)
+    transactions = exclude_existing_transactions(transactions)
     assemble_portfolio(last_portfolio, latest_date, transactions)
     update_transactions(transactions)
 
@@ -134,4 +148,10 @@ def portfolio_overview(request):
 
 
 def portfolio_performance(request):
+    refresh_depot_data()
     return render(request, 'portfolio/portfolio-performance.html')
+
+
+def portfolio_depot(request):
+    refresh_depot_data()
+    return render(request, 'portfolio/portfolio-depot.html')

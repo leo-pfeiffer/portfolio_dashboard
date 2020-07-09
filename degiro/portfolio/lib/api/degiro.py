@@ -16,7 +16,7 @@ class Degiro:
         self.sessid = None
 
     def login(self, conf_path=None, with2fa: bool = False):
-        logging.basicConfig(filename=paths.API+'/logs/degiro_login.log', level=logging.INFO, filemode='w')  # todo: take out filemd
+        logging.basicConfig(filename=paths.API+'/logs/degiro_login.log', level=logging.INFO, filemode='w')  # todo: take out filemode
         logging.info(datetime.strftime(datetime.now(), format='%H:%M:%S %Y-%m-%d'))
 
         if (conf_path is None) | (conf_path is False) | ((type(conf_path) is not bool) & (type(conf_path) is not str)):
