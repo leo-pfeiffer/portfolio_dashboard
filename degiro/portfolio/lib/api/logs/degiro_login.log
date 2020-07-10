@@ -1,29 +1,97 @@
-INFO:root:01:39:35 2020-07-10
-INFO:root:01:39:42 2020-07-10
-INFO:root:01:39:46 2020-07-10
-WARNING:django.request:Not Found: /
+INFO:root:02:31:12 2020-07-10
 INFO:root:Login.
 INFO:root:Status code: 200
-INFO:root:Session id: 6C266996044AA6B3FD053FB4A6AC3C53.prod_a_113_4
+INFO:root:Session id: 58380F5A69DF858FEFE556B955C2B832.prod_a_113_4
+INFO:root:02:31:34 2020-07-10
 INFO:root:Login.
 INFO:root:Status code: 200
-INFO:root:Session id: AF56721388CB16601F8B72ED1A616C3F.prod_a_113_4
-INFO:root:01:40:03 2020-07-10
+INFO:root:Session id: F26209B3D791B8C481A390FA89D025E1.prod_a_113_4
+INFO:root:02:31:34 2020-07-10
 INFO:root:Login.
 INFO:root:Status code: 200
-INFO:root:Session id: ECEDAD863D06F837977159E3054099AE.prod_a_113_4
+INFO:root:Session id: 60A4BE30FB9C056715AED09F33D1B907.prod_a_113_4
+INFO:root:02:31:35 2020-07-10
 INFO:root:Login.
 INFO:root:Status code: 200
-INFO:root:Session id: 04F9B981FCADC21A3A40CCC0BA426951.prod_a_113_4
-INFO:root:01:40:18 2020-07-10
+INFO:root:Session id: D2FB29629CDF4925BFC2C1FF4448FBCA.prod_a_113_4
+INFO:root:02:31:35 2020-07-10
 INFO:root:Login.
 INFO:root:Status code: 200
-INFO:root:Session id: 165358B454B4D9556D208AB6E024592A.prod_a_113_4
-INFO:root:01:41:12 2020-07-10
+INFO:root:Session id: 00BADDF06BC708FCC9B77ADCBA6B2F37.prod_a_113_4
+INFO:root:02:31:35 2020-07-10
 INFO:root:Login.
 INFO:root:Status code: 200
-INFO:root:Session id: 513ADC6587E250C9F0DBE4B143C4DBF4.prod_a_113_4
-INFO:root:01:42:12 2020-07-10
+INFO:root:Session id: 85F1811FF976EB12BF788B4A41C2D313.prod_a_113_4
+INFO:root:02:31:36 2020-07-10
 INFO:root:Login.
 INFO:root:Status code: 200
-INFO:root:Session id: 7D457121D54681AC0F447A1401E8D006.prod_a_113_4
+INFO:root:Session id: 2F5095EF3ADC853C014A4DF1D7FD31CC.prod_a_113_4
+INFO:root:02:31:36 2020-07-10
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: 217F28535EF9B75B9EB0B86EA4922FC6.prod_a_113_4
+INFO:root:02:31:36 2020-07-10
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: C8FFA474598BB4A8C3156A22E8765022.prod_a_113_4
+INFO:root:02:31:37 2020-07-10
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: 9C9C4F28166570371C9CC5627D561EC2.prod_a_113_4
+INFO:root:02:31:37 2020-07-10
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: 4DD8652393094B21A94A6125FB8AE7B5.prod_a_113_4
+INFO:root:02:31:37 2020-07-10
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: E5B07D63B7B7ADB07AF7B46421EC5CCF.prod_a_113_4
+INFO:root:02:31:38 2020-07-10
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: 3707DB50DA462DA96CE86FB5C3DAD2E8.prod_a_113_4
+INFO:root:02:31:38 2020-07-10
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: 7DF431ADE218CAC65D968788A1C284ED.prod_a_113_4
+INFO:root:02:31:38 2020-07-10
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: 005DE55D27C05446514E57A30651A83F.prod_a_113_4
+INFO:root:02:31:39 2020-07-10
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: 7F8C53D08AFED85C22BCD5B6BBDD677F.prod_a_113_4
+INFO:root:02:31:39 2020-07-10
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: C797842C28622A9E3A851CC4611C80C2.prod_a_113_4
+INFO:root:02:31:39 2020-07-10
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: 69621FA9BD463C04BA184424AC85AFA5.prod_a_113_4
+INFO:root:02:31:39 2020-07-10
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: 39B1FBBBD0F5551FCD18B576904BF368.prod_a_113_4
+INFO:root:02:31:40 2020-07-10
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: C121807505988362B3EBA24438DEC09D.prod_a_113_4
+INFO:root:02:31:40 2020-07-10
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: 85F458CA531193265935EBA278F73291.prod_a_113_4
+INFO:root:02:31:40 2020-07-10
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: F2C61E86ABFF4F782BCC15300E1EF5E7.prod_a_113_4
+INFO:root:02:31:41 2020-07-10
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: B3DFD0213E89DF50B4844D02C2C7CE0D.prod_a_113_4
+INFO:root:02:32:59 2020-07-10
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: 45D5EEC9AAAB8EF52007F78EB11DD2EB.prod_a_113_4
+INFO:django.utils.autoreload:/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/views.py changed, reloading.

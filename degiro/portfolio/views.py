@@ -48,10 +48,39 @@ def refresh_depot_data():
         """
         Transactions.objects.bulk_create([Transactions(**vals) for vals in transactions])
 
+    def fill_non_transaction_dates():
+        """
+        On days without transactions use portfolio from previous day
+        """
+        first_date = Depot.objects.earliest('date').date
+        last_date = Depot.objects.latest('date').date
+
+        date_iterator = first_date
+
+        while date_iterator <= last_date:
+
+            if Depot.objects.filter(date__exact=date_iterator).count() == 0:
+                prev = date_iterator-relativedelta(days=1)
+                last_portfolio = list(Depot.objects.filter(date__exact=prev).values('symbol', 'pieces'))
+
+                for asset in last_portfolio:
+                    asset['date'] = date_iterator
+
+                Depot.objects.bulk_create([Depot(**vals) for vals in last_portfolio])
+
+            date_iterator = date_iterator + relativedelta(days=1)
+
     def assemble_portfolio(last_portfolio: dict, latest_date: datetime.date, transactions):
         """
         Create all new daily portfolios since last update
         """
+
+        def upload_new_transactions(date, portfolio_at_date):
+            """
+            Upload new transactions to database
+            """
+            upload = [{'symbol': k, 'pieces': v, 'date': date} for k, v in portfolio_at_date.items()]
+            Depot.objects.bulk_create([Depot(**vals) for vals in upload])
 
         if len(transactions) == 0:
             return None
@@ -114,9 +143,8 @@ def refresh_depot_data():
 
             portfolio_at_date = dict(Counter(portfolio_at_date) + Counter(daily_buys_red) + Counter(daily_sells_red))
 
-            upload = [{'symbol': k, 'pieces': v, 'date': date_iterator} for k, v in portfolio_at_date.items()]
+            upload_new_transactions(date=date_iterator, portfolio_at_date=portfolio_at_date)
 
-            Depot.objects.bulk_create([Depot(**vals) for vals in upload])
             print('Successful upload')
 
     last_portfolio_all = get_last_portfolio()
@@ -128,6 +156,7 @@ def refresh_depot_data():
     transactions = exclude_existing_transactions(transactions)
     assemble_portfolio(last_portfolio, latest_date, transactions)
     update_transactions(transactions)
+    fill_non_transaction_dates()
 
 
 def portfolio_allocation(request):
