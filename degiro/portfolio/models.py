@@ -5,6 +5,7 @@ class Depot(models.Model):
     symbol = models.CharField(max_length=32)
     pieces = models.FloatField()
     date = models.DateField()
+    price = models.FloatField(default=0)
 
 
 class Assets(models.Model):
@@ -13,7 +14,7 @@ class Assets(models.Model):
     name = models.TextField()
     type = models.CharField(max_length=32)
     currency = models.CharField(max_length=3)
-    productId = models.CharField(max_length=32)  # degiro product ID
+    productId = models.CharField(max_length=32)  # degiro productID
 
 
 class Prices(models.Model):

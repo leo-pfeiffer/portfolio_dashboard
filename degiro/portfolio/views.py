@@ -18,6 +18,7 @@ class IndexView(generic.TemplateView):
 
     def get(self, request):
         refresh_depot_data()
+        refresh_price_data()
         return render(request, self.template_name)
 
 
@@ -159,6 +160,9 @@ def refresh_depot_data():
     fill_non_transaction_dates()
     # todo: for all assets for all dates: download yahoo price data and write to db
 
+def refresh_price_data():
+    Depot.objects.filter(price__exact=0)
+    pass
 
 def portfolio_allocation(request):
     df = generate_portfolio_data()

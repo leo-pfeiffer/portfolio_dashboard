@@ -5,7 +5,7 @@ import getpass
 from datetime import datetime, date
 from collections import defaultdict
 # from settings import paths # if used outside of django
-from .settings import paths # if used with django
+from .settings import paths  # if used with django
 
 
 class Degiro:
@@ -16,7 +16,8 @@ class Degiro:
         self.sessid = None
 
     def login(self, conf_path=None, with2fa: bool = False):
-        logging.basicConfig(filename=paths.API+'/logs/degiro_login.log', level=logging.INFO, filemode='w')  # todo: take out filemode
+        logging.basicConfig(filename=paths.API + '/logs/degiro_login.log', level=logging.INFO,
+                            filemode='w')  # todo: take out filemode
         logging.info(datetime.strftime(datetime.now(), format='%H:%M:%S %Y-%m-%d'))
 
         if (conf_path is None) | (conf_path is False) | ((type(conf_path) is not bool) & (type(conf_path) is not str)):
@@ -248,8 +249,6 @@ class Degiro:
             return r.json()
 
 
-
-
 if __name__ == '__main__':
     deg = Degiro()
     deg.login(conf_path=True, with2fa=False)
@@ -276,4 +275,3 @@ if __name__ == '__main__':
         deg.getProductByIds(i)
 
     int(0)
-
