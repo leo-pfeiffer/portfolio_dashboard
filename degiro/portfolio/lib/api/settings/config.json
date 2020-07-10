@@ -1,6 +1,0 @@
-{
-"username" : "heinrichpfeiffer",
-"password" : ""
-}
-
-git filter-branch --force --index-filter "git rm --cached --ignore-unmatch degiro/portfolio/lib/api/settings/config.json" --prune-empty --tag-name-filter cat -- --all
