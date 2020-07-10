@@ -61,7 +61,7 @@ def refresh_depot_data():
         while date_iterator <= last_date:
 
             if Depot.objects.filter(date__exact=date_iterator).count() == 0:
-                prev = date_iterator-relativedelta(days=1)
+                prev = date_iterator - relativedelta(days=1)
                 last_portfolio = list(Depot.objects.filter(date__exact=prev).values('symbol', 'pieces'))
 
                 for asset in last_portfolio:
@@ -160,9 +160,11 @@ def refresh_depot_data():
     fill_non_transaction_dates()
     # todo: for all assets for all dates: download yahoo price data and write to db
 
+
 def refresh_price_data():
     Depot.objects.filter(price__exact=0)
     pass
+
 
 def portfolio_allocation(request):
     df = generate_portfolio_data()
