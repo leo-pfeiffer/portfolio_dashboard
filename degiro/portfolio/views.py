@@ -157,6 +157,7 @@ def refresh_depot_data():
     assemble_portfolio(last_portfolio, latest_date, transactions)
     update_transactions(transactions)
     fill_non_transaction_dates()
+    # todo: for all assets for all dates: download yahoo price data and write to db
 
 
 def portfolio_allocation(request):
