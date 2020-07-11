@@ -2,10 +2,10 @@ from django.views import generic
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from .lib.degiro_helpers import generate_portfolio_data, get_transactions, get_info_by_productId
-from .lib.yahoodata import get_yahoo_data
+from .lib.yahoodata import get_yahoo_data, ffill_yahoo_data
 from .tables import PortfolioTable
 from django_tables2 import RequestConfig
-from .models import Depot, Transactions
+from .models import Depot, Transactions, Prices
 import datetime
 from dateutil.relativedelta import relativedelta
 from collections import Counter
@@ -164,6 +164,28 @@ def refresh_depot_data():
 def refresh_price_data():
     Depot.objects.filter(price__exact=0)
     pass
+
+
+def update_price_database():
+    depot_symbols = [x['symbol'] for x in list(Depot.objects.all().values('symbol').distinct())]
+    existing_symbols = [x['symbol'] for x in list(Prices.objects.all().values('symbol').distinct())]
+    non_existing_symbols = [x for x in depot_symbols if x not in existing_symbols]
+
+    # handle non existing symbols
+    if len(non_existing_symbols) > 0:
+        start_date = datetime.date(2020, 1, 1)
+        end_date = datetime.date.today()
+
+        yahoo_df = get_yahoo_data(non_existing_symbols, start=start_date, end=end_date)
+        ffilled_df = ffill_yahoo_data(yahoo_df).reset_index()
+
+        df_out = pd.melt(ffilled_df, id_vars='index')
+        df_out.columns = ['date', 'symbol', 'price']
+        dict_out = df_out.to_dict()
+
+        Prices.objects.bulk_create([Depot(**vals) for vals in dict_out])
+
+    # handle existing symbols
 
 
 def portfolio_allocation(request):

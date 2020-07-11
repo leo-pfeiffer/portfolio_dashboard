@@ -3,7 +3,11 @@ import pandas as pd
 import datetime
 from dateutil.relativedelta import relativedelta
 
-def get_yahoo_data(tickers: list, start: str, end: str):
+
+def get_yahoo_data(tickers: list, start: datetime.date, end: datetime.date):
+    start = start.strftime(format="%Y-%m-%d")
+    end = end.strftime(format="%Y-%m-%d")
+
     tickers = [t.lower() for t in tickers]
     prices = yf.download(tickers=tickers, start=start, end=end).loc[:, 'Adj Close']
     prices.index = [x.date() for x in prices.index.to_list()]
