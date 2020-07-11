@@ -18,7 +18,7 @@ class IndexView(generic.TemplateView):
 
     def get(self, request):
         refresh_depot_data()
-        refresh_price_data()
+        update_price_database()
         return render(request, self.template_name)
 
 
@@ -171,11 +171,21 @@ def update_price_database():
     existing_symbols = [x['symbol'] for x in list(Prices.objects.all().values('symbol').distinct())]
     non_existing_symbols = [x for x in depot_symbols if x not in existing_symbols]
 
+    update_necessary = False
+
+    # handle existing symbols
+    if len(Prices.objects.filter(date__in=existing_symbols).values()) > 0:
+        update_necessary = True
+        start_date = Prices.objects.filter(date__in=existing_symbols).latest('date').date + relativedelta(days=1)
+        end_date = datetime.date.today()
+
     # handle non existing symbols
     if len(non_existing_symbols) > 0:
+        update_necessary = True
         start_date = datetime.date(2020, 1, 1)
         end_date = datetime.date.today()
 
+    if update_necessary:
         yahoo_df = get_yahoo_data(non_existing_symbols, start=start_date, end=end_date)
         ffilled_df = ffill_yahoo_data(yahoo_df).reset_index()
 
@@ -184,8 +194,6 @@ def update_price_database():
         dict_out = df_out.to_dict()
 
         Prices.objects.bulk_create([Depot(**vals) for vals in dict_out])
-
-    # handle existing symbols
 
 
 def portfolio_allocation(request):

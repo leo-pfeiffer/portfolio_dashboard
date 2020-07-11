@@ -1,92 +1,36 @@
-INFO:root:11:54:15 2020-07-11
+INFO:root:12:18:42 2020-07-11
 INFO:root:Login.
 INFO:root:Status code: 200
-INFO:root:Session id: B37A4D68F965F4F657A6F3088586BF5E.prod_a_113_4
-INFO:root:11:54:41 2020-07-11
+INFO:root:Session id: A62BA52E4C6BE15EF4A9E438094A9078.prod_a_113_4
+WARNING:django.request:Not Found: /
+INFO:root:12:19:21 2020-07-11
 INFO:root:Login.
 INFO:root:Status code: 200
-INFO:root:Session id: 3679E643F805756AD71462CF00C600C2.prod_a_113_4
-INFO:root:11:54:41 2020-07-11
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: A6AEF58DC35340CAA52203D7155EEA92.prod_a_113_4
-INFO:root:11:54:41 2020-07-11
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: F493F9D8A5EAA4AD51F1A920A3B9048F.prod_a_113_4
-INFO:root:11:54:42 2020-07-11
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: 12ADB2A82B9738FB94083CFAA165A113.prod_a_113_4
-INFO:root:11:54:42 2020-07-11
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: 97F07C58B94C3983F4037DA1BAFFC8D6.prod_a_113_4
-INFO:root:11:54:42 2020-07-11
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: 8AAEFA639310E77FE84BD8483DA12B83.prod_a_113_4
-INFO:root:11:54:42 2020-07-11
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: CD03D277ED4C44AFDBAB6B4DA4D56F4A.prod_a_113_4
-INFO:root:11:54:43 2020-07-11
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: 4B26A198849EBF33A3F00F1220644EE3.prod_a_113_4
-INFO:root:11:54:43 2020-07-11
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: 41F9B2A4E3F27849A3162DBE09A57D53.prod_a_113_4
-INFO:root:11:54:43 2020-07-11
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: 94B8847F8DF343D4A48489F48E72AC1A.prod_a_113_4
-INFO:root:11:54:44 2020-07-11
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: 6F1687EE39B7E120F9CACA6C036FA943.prod_a_113_4
-INFO:root:11:54:44 2020-07-11
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: 92C27750578596EB251660587B36F43C.prod_a_113_4
-INFO:root:11:54:45 2020-07-11
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: 0B4847BC8CF55BDA4A5D8BC901D5061E.prod_a_113_4
-INFO:root:11:54:45 2020-07-11
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: 466DA5D61167B8B89EDA2A6EA3344C22.prod_a_113_4
-INFO:root:11:54:45 2020-07-11
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: C178804E1CC68DD9A8275EAE411F14A0.prod_a_113_4
-INFO:root:11:54:46 2020-07-11
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: 865A81C28630CA46A65FC8CD8C4A0F34.prod_a_113_4
-INFO:root:11:54:46 2020-07-11
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: DF844B8CE24EEA77BC23340B53605A92.prod_a_113_4
-INFO:root:11:54:46 2020-07-11
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: 050B90FC23BD57A9EFE2FCC8C8D85AFD.prod_a_113_4
-INFO:root:11:54:47 2020-07-11
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: EBA691993CB42D29A18CF5BA73ADC823.prod_a_113_4
-INFO:root:11:54:48 2020-07-11
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: FC8DC422E9CB16DF237F8C2AB9C59D78.prod_a_113_4
-INFO:root:11:54:48 2020-07-11
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: DEABD0F9300A2854D580ECC829F5006C.prod_a_113_4
-INFO:root:11:54:49 2020-07-11
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: 5D0114B41B5F9C5AC6D809D95C23C69B.prod_a_113_4
+INFO:root:Session id: F23BE80C2AB0A754D1DCEEC5C1C991CE.prod_a_113_4
+ERROR:django.request:Internal Server Error: /portfolio/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.7/site-packages/django/core/handlers/exception.py", line 34, in inner
+    response = get_response(request)
+  File "/usr/local/lib/python3.7/site-packages/django/core/handlers/base.py", line 115, in _get_response
+    response = self.process_exception_by_middleware(e, request)
+  File "/usr/local/lib/python3.7/site-packages/django/core/handlers/base.py", line 113, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "/usr/local/lib/python3.7/site-packages/django/views/generic/base.py", line 71, in view
+    return self.dispatch(request, *args, **kwargs)
+  File "/usr/local/lib/python3.7/site-packages/django/views/generic/base.py", line 97, in dispatch
+    return handler(request, *args, **kwargs)
+  File "/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/views.py", line 21, in get
+    update_price_database()
+  File "/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/views.py", line 189, in update_price_database
+    yahoo_df = get_yahoo_data(non_existing_symbols, start=start_date, end=end_date)
+  File "/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/lib/yahoodata.py", line 15, in get_yahoo_data
+    currencies = {ticker: yf.Ticker(ticker).info['currency'] for ticker in tickers}
+  File "/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/lib/yahoodata.py", line 15, in <dictcomp>
+    currencies = {ticker: yf.Ticker(ticker).info['currency'] for ticker in tickers}
+  File "/usr/local/lib/python3.7/site-packages/yfinance/ticker.py", line 138, in info
+    return self.get_info()
+  File "/usr/local/lib/python3.7/site-packages/yfinance/base.py", line 415, in get_info
+    self._get_fundamentals(proxy)
+  File "/usr/local/lib/python3.7/site-packages/yfinance/base.py", line 286, in _get_fundamentals
+    self._institutional_holders = holders[1]
+IndexError: list index out of range
