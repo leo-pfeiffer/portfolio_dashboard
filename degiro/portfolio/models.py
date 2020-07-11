@@ -20,7 +20,7 @@ class Assets(models.Model):
 class Prices(models.Model):
     symbol = models.CharField(max_length=32)
     date = models.DateField()
-    price = models.FloatField()
+    price = models.FloatField(default=0)
 
 
 class Currencies(models.Model):

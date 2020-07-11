@@ -12,7 +12,8 @@ def get_yahoo_data(tickers: list, start: datetime.date, end: datetime.date):
     prices = yf.download(tickers=tickers, start=start, end=end).loc[:, 'Adj Close']
     prices.index = [x.date() for x in prices.index.to_list()]
     # todo: the following line is very slow.. maybe use other package/source
-    currencies = {ticker: yf.Ticker(ticker).info['currency'] for ticker in tickers}
+    # currencies = {ticker: yf.Ticker(ticker).info['currency'] for ticker in tickers}
+    currencies = []
     return {'prices': prices, 'currencies': currencies}
 
 
@@ -22,8 +23,8 @@ def last_data_at_date(tickers: list, date: datetime.datetime.date):
 
 
 def ffill_yahoo_data(df: pd.DataFrame) -> pd.DataFrame:
-    start = df.index[0].date()
-    end = df.index[-1].date()
+    start = df.index[0]
+    end = df.index[-1]
 
     daterange = [start + relativedelta(days=i) for i in range((end - start).days + 1)]
     new = pd.DataFrame(index=daterange)

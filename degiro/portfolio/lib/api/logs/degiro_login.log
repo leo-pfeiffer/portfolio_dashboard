@@ -1,13 +1,17 @@
-INFO:root:12:18:42 2020-07-11
+INFO:root:12:51:55 2020-07-11
 INFO:root:Login.
 INFO:root:Status code: 200
-INFO:root:Session id: A62BA52E4C6BE15EF4A9E438094A9078.prod_a_113_4
-WARNING:django.request:Not Found: /
-INFO:root:12:19:21 2020-07-11
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: F23BE80C2AB0A754D1DCEEC5C1C991CE.prod_a_113_4
+INFO:root:Session id: 7EDF4F85626DC4F8232DCF1F00017DEA.prod_a_113_4
 ERROR:django.request:Internal Server Error: /portfolio/
+Traceback (most recent call last):
+  File "/usr/local/lib/python3.7/site-packages/django/db/backends/utils.py", line 86, in _execute
+    return self.cursor.execute(sql, params)
+  File "/usr/local/lib/python3.7/site-packages/django/db/backends/sqlite3/base.py", line 396, in execute
+    return Database.Cursor.execute(self, query, params)
+sqlite3.IntegrityError: NOT NULL constraint failed: portfolio_prices.price
+
+The above exception was the direct cause of the following exception:
+
 Traceback (most recent call last):
   File "/usr/local/lib/python3.7/site-packages/django/core/handlers/exception.py", line 34, in inner
     response = get_response(request)
@@ -21,16 +25,31 @@ Traceback (most recent call last):
     return handler(request, *args, **kwargs)
   File "/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/views.py", line 21, in get
     update_price_database()
-  File "/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/views.py", line 189, in update_price_database
-    yahoo_df = get_yahoo_data(non_existing_symbols, start=start_date, end=end_date)
-  File "/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/lib/yahoodata.py", line 15, in get_yahoo_data
-    currencies = {ticker: yf.Ticker(ticker).info['currency'] for ticker in tickers}
-  File "/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/lib/yahoodata.py", line 15, in <dictcomp>
-    currencies = {ticker: yf.Ticker(ticker).info['currency'] for ticker in tickers}
-  File "/usr/local/lib/python3.7/site-packages/yfinance/ticker.py", line 138, in info
-    return self.get_info()
-  File "/usr/local/lib/python3.7/site-packages/yfinance/base.py", line 415, in get_info
-    self._get_fundamentals(proxy)
-  File "/usr/local/lib/python3.7/site-packages/yfinance/base.py", line 286, in _get_fundamentals
-    self._institutional_holders = holders[1]
-IndexError: list index out of range
+  File "/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/views.py", line 196, in update_price_database
+    Prices.objects.bulk_create([Prices(**vals) for vals in dict_out])
+  File "/usr/local/lib/python3.7/site-packages/django/db/models/manager.py", line 82, in manager_method
+    return getattr(self.get_queryset(), name)(*args, **kwargs)
+  File "/usr/local/lib/python3.7/site-packages/django/db/models/query.py", line 493, in bulk_create
+    objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts,
+  File "/usr/local/lib/python3.7/site-packages/django/db/models/query.py", line 1230, in _batched_insert
+    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
+  File "/usr/local/lib/python3.7/site-packages/django/db/models/query.py", line 1204, in _insert
+    return query.get_compiler(using=using).execute_sql(returning_fields)
+  File "/usr/local/lib/python3.7/site-packages/django/db/models/sql/compiler.py", line 1392, in execute_sql
+    cursor.execute(sql, params)
+  File "/usr/local/lib/python3.7/site-packages/django/db/backends/utils.py", line 100, in execute
+    return super().execute(sql, params)
+  File "/usr/local/lib/python3.7/site-packages/django/db/backends/utils.py", line 68, in execute
+    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
+  File "/usr/local/lib/python3.7/site-packages/django/db/backends/utils.py", line 77, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+  File "/usr/local/lib/python3.7/site-packages/django/db/backends/utils.py", line 86, in _execute
+    return self.cursor.execute(sql, params)
+  File "/usr/local/lib/python3.7/site-packages/django/db/utils.py", line 90, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "/usr/local/lib/python3.7/site-packages/django/db/backends/utils.py", line 86, in _execute
+    return self.cursor.execute(sql, params)
+  File "/usr/local/lib/python3.7/site-packages/django/db/backends/sqlite3/base.py", line 396, in execute
+    return Database.Cursor.execute(self, query, params)
+django.db.utils.IntegrityError: NOT NULL constraint failed: portfolio_prices.price
+INFO:django.utils.autoreload:/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/views.py changed, reloading.

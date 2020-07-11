@@ -186,14 +186,16 @@ def update_price_database():
         end_date = datetime.date.today()
 
     if update_necessary:
-        yahoo_df = get_yahoo_data(non_existing_symbols, start=start_date, end=end_date)
+        yahoo_df = get_yahoo_data(non_existing_symbols, start=start_date, end=end_date)['prices']
         ffilled_df = ffill_yahoo_data(yahoo_df).reset_index()
 
         df_out = pd.melt(ffilled_df, id_vars='index')
         df_out.columns = ['date', 'symbol', 'price']
-        dict_out = df_out.to_dict()
+        dict_out = df_out.to_dict('records')
 
-        Prices.objects.bulk_create([Depot(**vals) for vals in dict_out])
+        # todo: For some reason the bulk create doesn't work yet
+        # django.db.utils.IntegrityError: NOT NULL constraint failed: portfolio_prices.price
+        Prices.objects.bulk_create([Prices(**vals) for vals in dict_out])
 
 
 def portfolio_allocation(request):
