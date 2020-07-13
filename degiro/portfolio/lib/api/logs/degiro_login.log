@@ -1,17 +1,8 @@
-INFO:root:12:51:55 2020-07-11
+INFO:root:21:18:18 2020-07-13
 INFO:root:Login.
 INFO:root:Status code: 200
-INFO:root:Session id: 7EDF4F85626DC4F8232DCF1F00017DEA.prod_a_113_4
+INFO:root:Session id: 72A40DC15EB070EAE39E59C7530F40C4.prod_a_113_4
 ERROR:django.request:Internal Server Error: /portfolio/
-Traceback (most recent call last):
-  File "/usr/local/lib/python3.7/site-packages/django/db/backends/utils.py", line 86, in _execute
-    return self.cursor.execute(sql, params)
-  File "/usr/local/lib/python3.7/site-packages/django/db/backends/sqlite3/base.py", line 396, in execute
-    return Database.Cursor.execute(self, query, params)
-sqlite3.IntegrityError: NOT NULL constraint failed: portfolio_prices.price
-
-The above exception was the direct cause of the following exception:
-
 Traceback (most recent call last):
   File "/usr/local/lib/python3.7/site-packages/django/core/handlers/exception.py", line 34, in inner
     response = get_response(request)
@@ -23,33 +14,31 @@ Traceback (most recent call last):
     return self.dispatch(request, *args, **kwargs)
   File "/usr/local/lib/python3.7/site-packages/django/views/generic/base.py", line 97, in dispatch
     return handler(request, *args, **kwargs)
-  File "/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/views.py", line 21, in get
+  File "/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/views.py", line 22, in get
     update_price_database()
-  File "/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/views.py", line 196, in update_price_database
-    Prices.objects.bulk_create([Prices(**vals) for vals in dict_out])
+  File "/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/views.py", line 178, in update_price_database
+    if len(Prices.objects.filter(date__in=existing_symbols).values()) > 0:
   File "/usr/local/lib/python3.7/site-packages/django/db/models/manager.py", line 82, in manager_method
     return getattr(self.get_queryset(), name)(*args, **kwargs)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/query.py", line 493, in bulk_create
-    objs_without_pk, fields, batch_size, ignore_conflicts=ignore_conflicts,
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/query.py", line 1230, in _batched_insert
-    self._insert(item, fields=fields, using=self.db, ignore_conflicts=ignore_conflicts)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/query.py", line 1204, in _insert
-    return query.get_compiler(using=using).execute_sql(returning_fields)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/sql/compiler.py", line 1392, in execute_sql
-    cursor.execute(sql, params)
-  File "/usr/local/lib/python3.7/site-packages/django/db/backends/utils.py", line 100, in execute
-    return super().execute(sql, params)
-  File "/usr/local/lib/python3.7/site-packages/django/db/backends/utils.py", line 68, in execute
-    return self._execute_with_wrappers(sql, params, many=False, executor=self._execute)
-  File "/usr/local/lib/python3.7/site-packages/django/db/backends/utils.py", line 77, in _execute_with_wrappers
-    return executor(sql, params, many, context)
-  File "/usr/local/lib/python3.7/site-packages/django/db/backends/utils.py", line 86, in _execute
-    return self.cursor.execute(sql, params)
-  File "/usr/local/lib/python3.7/site-packages/django/db/utils.py", line 90, in __exit__
-    raise dj_exc_value.with_traceback(traceback) from exc_value
-  File "/usr/local/lib/python3.7/site-packages/django/db/backends/utils.py", line 86, in _execute
-    return self.cursor.execute(sql, params)
-  File "/usr/local/lib/python3.7/site-packages/django/db/backends/sqlite3/base.py", line 396, in execute
-    return Database.Cursor.execute(self, query, params)
-django.db.utils.IntegrityError: NOT NULL constraint failed: portfolio_prices.price
+  File "/usr/local/lib/python3.7/site-packages/django/db/models/query.py", line 904, in filter
+    return self._filter_or_exclude(False, *args, **kwargs)
+  File "/usr/local/lib/python3.7/site-packages/django/db/models/query.py", line 923, in _filter_or_exclude
+    clone.query.add_q(Q(*args, **kwargs))
+  File "/usr/local/lib/python3.7/site-packages/django/db/models/sql/query.py", line 1354, in add_q
+    clause, _ = self._add_q(q_object, self.used_aliases)
+  File "/usr/local/lib/python3.7/site-packages/django/db/models/sql/query.py", line 1385, in _add_q
+    check_filterable=check_filterable,
+  File "/usr/local/lib/python3.7/site-packages/django/db/models/sql/query.py", line 1315, in build_filter
+    condition = self.build_lookup(lookups, col, value)
+  File "/usr/local/lib/python3.7/site-packages/django/db/models/sql/query.py", line 1169, in build_lookup
+    lookup = lookup_class(lhs, rhs)
+  File "/usr/local/lib/python3.7/site-packages/django/db/models/lookups.py", line 22, in __init__
+    self.rhs = self.get_prep_lookup()
+  File "/usr/local/lib/python3.7/site-packages/django/db/models/lookups.py", line 223, in get_prep_lookup
+    rhs_value = self.lhs.output_field.get_prep_value(rhs_value)
+  File "/usr/local/lib/python3.7/site-packages/django/db/models/fields/__init__.py", line 1215, in get_prep_value
+    return self.to_python(value)
+  File "/usr/local/lib/python3.7/site-packages/django/db/models/fields/__init__.py", line 1190, in to_python
+    params={'value': value},
+django.core.exceptions.ValidationError: ['“ABT” value has an invalid date format. It must be in YYYY-MM-DD format.']
 INFO:django.utils.autoreload:/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/views.py changed, reloading.

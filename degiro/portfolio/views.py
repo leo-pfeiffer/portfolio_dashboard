@@ -191,10 +191,12 @@ def update_price_database():
 
         df_out = pd.melt(ffilled_df, id_vars='index')
         df_out.columns = ['date', 'symbol', 'price']
+        if df_out['price'].isna().sum() > 0:
+            dropped = list(df_out.iloc[df_out['price'].isna().values,]['symbol'].unique())
+            df_out = df_out.dropna()
+            print(f'Found NA values. Dropped {dropped}.')
         dict_out = df_out.to_dict('records')
 
-        # todo: For some reason the bulk create doesn't work yet
-        # django.db.utils.IntegrityError: NOT NULL constraint failed: portfolio_prices.price
         Prices.objects.bulk_create([Prices(**vals) for vals in dict_out])
 
 
