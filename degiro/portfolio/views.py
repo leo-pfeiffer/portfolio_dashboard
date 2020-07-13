@@ -22,6 +22,43 @@ class IndexView(generic.TemplateView):
         return render(request, self.template_name)
 
 
+def portfolio_allocation(request):
+    df = generate_portfolio_data()
+    data = [[x] for x in df['Allocation'].values.tolist()]
+    labels = [[x] for x in df.index.tolist()]
+
+    return render(request, 'portfolio/portfolio-allocation.html', {
+        'labels': labels,
+        'data': data,
+    })
+
+
+def portfolio_overview(request):
+    df = generate_portfolio_data().reset_index().rename(columns={'index': 'Symbol'}).to_dict('records')
+    out = PortfolioTable(df)
+    RequestConfig(request).configure(out)
+    return render(request, 'portfolio/portfolio-overview.html', {'table': out})
+
+
+def portfolio_performance(request):
+    refresh_depot_data()
+
+    # dummy data
+    financial_data = get_yahoo_data(['DOCU'], start=datetime.date(2020, 1, 1), end=datetime.date(2020, 7, 11))
+    prices = financial_data.to_frame().reset_index()
+    prices.columns = ['date1', 'price1']
+    data = prices.to_json(orient='records')
+
+    return render(request, 'portfolio/portfolio-performance.html', {
+        'data': data
+    })
+
+
+def portfolio_depot(request):
+    refresh_depot_data()
+    return render(request, 'portfolio/portfolio-depot.html')
+
+
 def refresh_depot_data():
     """
     Refresh depot data and update database.
@@ -208,40 +245,3 @@ def update_price_database():
         dict_out = df_out.to_dict('records')
 
         Prices.objects.bulk_create([Prices(**vals) for vals in dict_out])
-
-
-def portfolio_allocation(request):
-    df = generate_portfolio_data()
-    data = [[x] for x in df['Allocation'].values.tolist()]
-    labels = [[x] for x in df.index.tolist()]
-
-    return render(request, 'portfolio/portfolio-allocation.html', {
-        'labels': labels,
-        'data': data,
-    })
-
-
-def portfolio_overview(request):
-    df = generate_portfolio_data().reset_index().rename(columns={'index': 'Symbol'}).to_dict('records')
-    out = PortfolioTable(df)
-    RequestConfig(request).configure(out)
-    return render(request, 'portfolio/portfolio-overview.html', {'table': out})
-
-
-def portfolio_performance(request):
-    refresh_depot_data()
-
-    # dummy data
-    financial_data = get_yahoo_data(['DOCU'], start=datetime.date(2020, 1, 1), end=datetime.date(2020, 7, 11))
-    prices = financial_data.to_frame().reset_index()
-    prices.columns = ['date1', 'price1']
-    data = prices.to_json(orient='records')
-
-    return render(request, 'portfolio/portfolio-performance.html', {
-        'data': data
-    })
-
-
-def portfolio_depot(request):
-    refresh_depot_data()
-    return render(request, 'portfolio/portfolio-depot.html')
