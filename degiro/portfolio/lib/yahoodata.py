@@ -11,10 +11,7 @@ def get_yahoo_data(tickers: list, start: datetime.date, end: datetime.date):
     tickers = [t.lower() for t in tickers]
     prices = yf.download(tickers=tickers, start=start, end=end).loc[:, 'Adj Close']
     prices.index = [x.date() for x in prices.index.to_list()]
-    # todo: the following line is very slow.. maybe use other package/source
-    # currencies = {ticker: yf.Ticker(ticker).info['currency'] for ticker in tickers}
-    currencies = []
-    return {'prices': prices, 'currencies': currencies}
+    return prices
 
 
 def last_data_at_date(tickers: list, date: datetime.datetime.date):

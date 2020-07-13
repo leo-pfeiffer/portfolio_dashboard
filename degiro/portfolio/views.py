@@ -158,7 +158,9 @@ def refresh_depot_data():
     assemble_portfolio(last_portfolio, latest_date, transactions)
     update_transactions(transactions)
     fill_non_transaction_dates()
-    # todo: for all assets for all dates: download yahoo price data and write to db
+    # todo: try whether the following works
+    update_price_database()
+    refresh_price_data()
 
 
 def refresh_price_data():
@@ -167,6 +169,7 @@ def refresh_price_data():
 
 
 def update_price_database():
+    # todo: test whether this works when we *update* instead of gather entirely new data
     depot_symbols = [x['symbol'] for x in list(Depot.objects.all().values('symbol').distinct())]
     existing_symbols = [x['symbol'] for x in list(Prices.objects.all().values('symbol').distinct())]
     non_existing_symbols = [x for x in depot_symbols if x not in existing_symbols]
@@ -174,9 +177,9 @@ def update_price_database():
     update_necessary = False
 
     # handle existing symbols
-    if len(Prices.objects.filter(date__in=existing_symbols).values()) > 0:
+    if len(Prices.objects.filter(symbol__in=existing_symbols).values()) > 0:
         update_necessary = True
-        start_date = Prices.objects.filter(date__in=existing_symbols).latest('date').date + relativedelta(days=1)
+        start_date = Prices.objects.filter(symbol__in=existing_symbols).latest('date').date + relativedelta(days=1)
         end_date = datetime.date.today()
 
     # handle non existing symbols
@@ -186,7 +189,11 @@ def update_price_database():
         end_date = datetime.date.today()
 
     if update_necessary:
-        yahoo_df = get_yahoo_data(non_existing_symbols, start=start_date, end=end_date)['prices']
+        yahoo_df = get_yahoo_data(non_existing_symbols, start=start_date, end=end_date)
+
+        if yahoo_df.empty:
+            print('Yahoo Finance didn\'t return anything.')
+            return None
         ffilled_df = ffill_yahoo_data(yahoo_df).reset_index()
 
         df_out = pd.melt(ffilled_df, id_vars='index')
@@ -222,8 +229,8 @@ def portfolio_performance(request):
     refresh_depot_data()
 
     # dummy data
-    financial_data = get_yahoo_data(['DOCU'], start="2020-01-01", end="2020-07-08")
-    prices = financial_data['prices'].to_frame().reset_index()
+    financial_data = get_yahoo_data(['DOCU'], start=datetime.date(2020, 1, 1), end=datetime.date(2020, 7, 11))
+    prices = financial_data.to_frame().reset_index()
     prices.columns = ['date1', 'price1']
     data = prices.to_json(orient='records')
 

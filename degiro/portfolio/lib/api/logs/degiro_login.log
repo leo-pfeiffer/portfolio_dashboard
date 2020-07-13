@@ -1,44 +1,12 @@
-INFO:root:21:18:18 2020-07-13
+INFO:root:21:32:56 2020-07-13
 INFO:root:Login.
 INFO:root:Status code: 200
-INFO:root:Session id: 72A40DC15EB070EAE39E59C7530F40C4.prod_a_113_4
-ERROR:django.request:Internal Server Error: /portfolio/
-Traceback (most recent call last):
-  File "/usr/local/lib/python3.7/site-packages/django/core/handlers/exception.py", line 34, in inner
-    response = get_response(request)
-  File "/usr/local/lib/python3.7/site-packages/django/core/handlers/base.py", line 115, in _get_response
-    response = self.process_exception_by_middleware(e, request)
-  File "/usr/local/lib/python3.7/site-packages/django/core/handlers/base.py", line 113, in _get_response
-    response = wrapped_callback(request, *callback_args, **callback_kwargs)
-  File "/usr/local/lib/python3.7/site-packages/django/views/generic/base.py", line 71, in view
-    return self.dispatch(request, *args, **kwargs)
-  File "/usr/local/lib/python3.7/site-packages/django/views/generic/base.py", line 97, in dispatch
-    return handler(request, *args, **kwargs)
-  File "/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/views.py", line 22, in get
-    update_price_database()
-  File "/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/views.py", line 178, in update_price_database
-    if len(Prices.objects.filter(date__in=existing_symbols).values()) > 0:
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/manager.py", line 82, in manager_method
-    return getattr(self.get_queryset(), name)(*args, **kwargs)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/query.py", line 904, in filter
-    return self._filter_or_exclude(False, *args, **kwargs)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/query.py", line 923, in _filter_or_exclude
-    clone.query.add_q(Q(*args, **kwargs))
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/sql/query.py", line 1354, in add_q
-    clause, _ = self._add_q(q_object, self.used_aliases)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/sql/query.py", line 1385, in _add_q
-    check_filterable=check_filterable,
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/sql/query.py", line 1315, in build_filter
-    condition = self.build_lookup(lookups, col, value)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/sql/query.py", line 1169, in build_lookup
-    lookup = lookup_class(lhs, rhs)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/lookups.py", line 22, in __init__
-    self.rhs = self.get_prep_lookup()
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/lookups.py", line 223, in get_prep_lookup
-    rhs_value = self.lhs.output_field.get_prep_value(rhs_value)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/fields/__init__.py", line 1215, in get_prep_value
-    return self.to_python(value)
-  File "/usr/local/lib/python3.7/site-packages/django/db/models/fields/__init__.py", line 1190, in to_python
-    params={'value': value},
-django.core.exceptions.ValidationError: ['“ABT” value has an invalid date format. It must be in YYYY-MM-DD format.']
-INFO:django.utils.autoreload:/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/views.py changed, reloading.
+INFO:root:Session id: 6F6805406238A863CE1BC289A5DF838E.prod_a_113_4
+INFO:root:21:33:25 2020-07-13
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: D668E15358FF387CCE112F604E79854E.prod_a_113_4
+INFO:root:21:33:28 2020-07-13
+INFO:root:Login.
+INFO:root:Status code: 200
+INFO:root:Session id: C72E920FF2F8D539381AE26F65646D16.prod_a_113_4
