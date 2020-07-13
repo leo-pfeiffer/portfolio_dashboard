@@ -1,12 +1,5 @@
-INFO:root:21:32:56 2020-07-13
+INFO:root:21:41:56 2020-07-13
 INFO:root:Login.
 INFO:root:Status code: 200
-INFO:root:Session id: 6F6805406238A863CE1BC289A5DF838E.prod_a_113_4
-INFO:root:21:33:25 2020-07-13
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: D668E15358FF387CCE112F604E79854E.prod_a_113_4
-INFO:root:21:33:28 2020-07-13
-INFO:root:Login.
-INFO:root:Status code: 200
-INFO:root:Session id: C72E920FF2F8D539381AE26F65646D16.prod_a_113_4
+INFO:root:Session id: 8EEC60ABC1690AF2D100752F729E7A25.prod_a_113_4
+INFO:django.utils.autoreload:/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/views.py changed, reloading.

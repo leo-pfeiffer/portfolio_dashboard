@@ -160,10 +160,13 @@ def refresh_depot_data():
     fill_non_transaction_dates()
     # todo: try whether the following works
     update_price_database()
-    refresh_price_data()
+    # refresh_price_data() -> This should eventually be done in the database and not in pandas as is the case now
 
 
 def refresh_price_data():
+    """
+    Add daily price info to the depot table
+    """
     Depot.objects.filter(price__exact=0)
     pass
 
