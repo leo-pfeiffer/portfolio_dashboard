@@ -19,6 +19,7 @@ class IndexView(generic.TemplateView):
     def get(self, request):
         refresh_depot_data()
         update_price_database()
+        df = daily_depot_prices()
         return render(request, self.template_name)
 
 
@@ -245,3 +246,15 @@ def update_price_database():
         dict_out = df_out.to_dict('records')
 
         Prices.objects.bulk_create([Prices(**vals) for vals in dict_out])
+
+
+def daily_depot_prices() -> pd.DataFrame:
+    """
+    Return a df with daily depot and respective prices
+    """
+    df_depot = pd.DataFrame(list(Depot.objects.all().values())).loc[:,['symbol', 'pieces', 'date']]
+    start_date = df_depot['date'].min()
+    df_prices = pd.DataFrame(list(Prices.objects.filter(date__gte=start_date).values())).loc[:, ['symbol', 'date', 'price']]
+    df = pd.merge(df_depot, df_prices, left_on=['date', 'symbol'], right_on=['date', 'symbol'], how='inner')
+
+    return df

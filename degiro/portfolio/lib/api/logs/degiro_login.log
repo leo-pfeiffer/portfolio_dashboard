@@ -1,5 +1,5 @@
-INFO:root:21:41:56 2020-07-13
+INFO:root:22:26:19 2020-07-13
 INFO:root:Login.
 INFO:root:Status code: 200
-INFO:root:Session id: 8EEC60ABC1690AF2D100752F729E7A25.prod_a_113_4
+INFO:root:Session id: 73F833DA95FBD25BC95321D30902F570.prod_a_113_4
 INFO:django.utils.autoreload:/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro/portfolio/views.py changed, reloading.
