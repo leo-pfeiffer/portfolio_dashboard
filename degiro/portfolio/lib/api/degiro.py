@@ -1,6 +1,5 @@
 import requests
 import json
-import logging
 import getpass
 from datetime import datetime, date
 from collections import defaultdict
@@ -16,9 +15,6 @@ class Degiro:
         self.sessid = None
 
     def login(self, conf_path=None, with2fa: bool = False):
-        logging.basicConfig(filename=paths.API + '/logs/degiro_login.log', level=logging.INFO,
-                            filemode='w')  # todo: take out filemode
-        logging.info(datetime.strftime(datetime.now(), format='%H:%M:%S %Y-%m-%d'))
 
         if (conf_path is None) | (conf_path is False) | ((type(conf_path) is not bool) & (type(conf_path) is not str)):
             conf = dict(username=input("Username: "), password=getpass.getpass())
@@ -50,15 +46,10 @@ class Degiro:
 
         r = self.sess.post(url, headers=header, data=json.dumps(payload))
 
-        logging.info("Login.")
-        logging.info('Status code: {}'.format(r.status_code))
-
         # Get session id
         self.sessid = r.headers['Set-Cookie']
         self.sessid = self.sessid.split(';')[0]
         self.sessid = self.sessid.split('=')[1]
-
-        logging.info('Session id: {}'.format(self.sessid))
 
     # This contain loads of user data, main interest here is the 'intAccount' -> also contains personal data
     def getConfig(self):
