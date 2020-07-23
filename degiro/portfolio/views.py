@@ -20,6 +20,7 @@ class IndexView(generic.TemplateView):
         refresh_depot_data()
         update_price_database()
         df = daily_depot_prices()
+        refresh_price_data(df)
         return render(request, self.template_name)
 
 
@@ -201,11 +202,12 @@ def refresh_depot_data():
     # refresh_price_data() -> This should eventually be done in the database and not in pandas as is the case now
 
 
-def refresh_price_data():
+def refresh_price_data(df):
     """
     Add daily price info to the depot table
     """
     Depot.objects.filter(price__exact=0)
+    # todo: all new price data from df should be inserted into existing depot table. Maybe use django get method.
     pass
 
 
@@ -252,7 +254,7 @@ def daily_depot_prices() -> pd.DataFrame:
     """
     Return a df with daily depot and respective prices
     """
-    df_depot = pd.DataFrame(list(Depot.objects.all().values())).loc[:,['symbol', 'pieces', 'date']]
+    df_depot = pd.DataFrame(list(Depot.objects.all().values())).loc[:, ['symbol', 'pieces', 'date']]
     start_date = df_depot['date'].min()
     df_prices = pd.DataFrame(list(Prices.objects.filter(date__gte=start_date).values())).loc[:, ['symbol', 'date', 'price']]
     df = pd.merge(df_depot, df_prices, left_on=['date', 'symbol'], right_on=['date', 'symbol'], how='inner')
