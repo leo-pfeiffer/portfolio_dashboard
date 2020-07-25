@@ -64,6 +64,8 @@ def get_info_by_productId(product_ids: list):
 
 def get_cashflows(start_dt: datetime.date):
     D = Degiro()
+    D.login(with2fa=False, conf_path=True)
+    D.getConfig()
     data = D.getAccountOverview(fromDate=start_dt.strftime(format="%d/%m/%Y"),
                                 toDate=datetime.date.today().strftime(format="%d/%m/%Y"))
 
@@ -72,6 +74,8 @@ def get_cashflows(start_dt: datetime.date):
     df.date = df.date.apply(lambda x: x.date)
     df = df[['date', 'change']].groupby('date').sum()
     df = df.reset_index()
+    df.change = -df.change
+    df.columns = ['date', 'cashflow']
 
     return df
 

@@ -2,11 +2,12 @@ from django.views import generic
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
-from .lib.degiro_helpers import generate_portfolio_data, get_transactions, get_info_by_productId
+from .lib.degiro_helpers import generate_portfolio_data, get_transactions, get_info_by_productId, get_cashflows
+from .lib.helpers import daterange
 from .lib.yahoodata import get_yahoo_data, ffill_yahoo_data
 from .tables import PortfolioTable
 from django_tables2 import RequestConfig
-from .models import Depot, Transactions, Prices
+from .models import Depot, Transactions, Prices, Cashflows
 import datetime
 from dateutil.relativedelta import relativedelta
 from collections import Counter
@@ -18,11 +19,16 @@ class IndexView(generic.TemplateView):
     template_name = 'portfolio/index.html'
 
     def get(self, request):
-        refresh_depot_data()
-        update_price_database()
-        df = daily_depot_prices()
-        refresh_price_data(df)
+        initiate_portfolio()
         return render(request, self.template_name)
+
+
+def initiate_portfolio():
+    refresh_depot_data()
+    update_price_database()
+    df = daily_depot_prices()
+    refresh_price_data(df)
+    refresh_cashflows()
 
 
 def portfolio_allocation(request):
@@ -44,20 +50,29 @@ def portfolio_overview(request):
 
 
 def portfolio_performance(request):
-    refresh_depot_data()
+    initiate_portfolio()
 
     # dummy data
-    financial_data = get_yahoo_data(['DOCU'], start=datetime.date(2020, 1, 1), end=datetime.date(2020, 7, 11))
-    prices = financial_data.to_frame().reset_index()
-    prices.columns = ['date1', 'price1']
-    data = prices.to_json(orient='records')
+    # financial_data = get_yahoo_data(['DOCU'], start=datetime.date(2020, 1, 1), end=datetime.date(2020, 7, 11))
+    # prices = financial_data.to_frame().reset_index()
+    # prices.columns = ['date1', 'price1']
+    # data = prices.to_json(orient='records')
 
     # calculate portfolio
     included_positions = Depot.objects.filter(~Q(price__exact=0))
     portfolio_df = pd.DataFrame(list(included_positions.values()))
     portfolio_df['total'] = portfolio_df.pieces * portfolio_df.price
+
     performance_df = portfolio_df[['date', 'total']].groupby("date").sum()
-    int(0)
+    cashflow_df = pd.DataFrame(list(Cashflows.objects.all().values()))
+
+    merged = pd.merge(performance_df, cashflow_df.loc[:, ['date', 'cumsum']], left_index=True, right_on='date')
+    merged['return'] = merged['total']/merged['cumsum']
+
+    returns = merged.loc[:, ['date', 'return']]
+    returns.columns = ['date1', 'price1']
+
+    data = returns.to_json(orient='records')
 
     return render(request, 'portfolio/portfolio-performance.html', {
         'data': data
@@ -268,6 +283,33 @@ def update_price_database():
         dict_out = df_out.to_dict('records')
 
         Prices.objects.bulk_create([Prices(**vals) for vals in dict_out])
+
+
+def refresh_cashflows():
+    """
+    Refresh cashflow and cummulated cashflows and upload to Cashflow model.
+    """
+    try:
+        last_date = Cashflows.objects.latest('date').date
+        last_cumsum = Cashflows.objects.get(date=last_date).cumsum
+    except ObjectDoesNotExist:
+        last_date = datetime.date(2020, 4, 1)
+        last_cumsum = 0
+
+    # handle no new data is available
+    try:
+        cashflow_df = get_cashflows(last_date + relativedelta(days=1))
+    except KeyError:
+        return None
+
+    cashflow_df['cumsum'] = cashflow_df.cashflow.cumsum()
+    cashflow_df.iloc[0, 2] += last_cumsum
+
+    upload_df = pd.DataFrame(index=daterange(cashflow_df.iloc[0, 0], cashflow_df.iloc[-1, 0]))
+    upload_df = upload_df.merge(cashflow_df, left_index=True, right_on='date', how="left").set_index("date").ffill()
+    upload_df = upload_df.reset_index()
+
+    Cashflows.objects.bulk_create([Cashflows(**vals) for vals in upload_df.to_dict('records')])
 
 
 def daily_depot_prices() -> pd.DataFrame:
