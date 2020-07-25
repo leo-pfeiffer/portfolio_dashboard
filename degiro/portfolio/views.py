@@ -1,8 +1,11 @@
+from django.template.loader import render_to_string, get_template
 from django.views import generic
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
+from weasyprint import HTML
+
 from .lib.degiro_helpers import generate_portfolio_data, get_transactions, get_info_by_productId, get_cashflows
 from .lib.helpers import daterange
 from .lib.yahoodata import get_yahoo_data, ffill_yahoo_data
@@ -10,6 +13,7 @@ from .tables import PortfolioTable
 from django_tables2 import RequestConfig
 from .models import Depot, Transactions, Prices, Cashflows
 import datetime
+import tempfile
 from dateutil.relativedelta import relativedelta
 from collections import Counter
 import numpy as np
@@ -51,13 +55,15 @@ def portfolio_overview(request):
 
 
 def create_report(request):
-    # create report
-    # send report to e-mail
-    successful = False
-    if successful:
-        return render(request, 'portfolio/portfolio-create-report.html')
-    else:
-        return HttpResponse("<script>alert('Couldn\'t create report');</script>")
+    last_dt = Depot.objects.latest('date').date
+    depot = Depot.objects.filter(date__exact=last_dt).values('symbol', 'pieces')
+
+    # Rendered
+    html_template = render_to_string('portfolio/portfolio-create-report.html', {'people': depot})
+    pdf_file = HTML(string=html_template).write_pdf()
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = 'filename="home_page.pdf"'
+    return response
 
 
 def portfolio_performance(request):
