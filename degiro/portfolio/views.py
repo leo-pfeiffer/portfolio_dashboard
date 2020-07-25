@@ -51,6 +51,9 @@ def portfolio_performance(request):
     prices.columns = ['date1', 'price1']
     data = prices.to_json(orient='records')
 
+    # calculate portfolio
+    included_positions = Depot.objects.filter(price__exact=0)
+
     return render(request, 'portfolio/portfolio-performance.html', {
         'data': data
     })
@@ -206,9 +209,21 @@ def refresh_price_data(df):
     """
     Add daily price info to the depot table
     """
-    Depot.objects.filter(price__exact=0)
-    # todo: all new price data from df should be inserted into existing depot table. Maybe use django get method.
-    pass
+    updatable_objects = Depot.objects.filter(price__exact=0)
+
+    keys = list(updatable_objects.values('symbol', 'date'))
+
+    for key in keys:
+        # get price from database
+        try:
+            price = Prices.objects.get(**key).price
+        except ObjectDoesNotExist:
+            price = 0
+
+        # update price in depot
+        position = Depot.objects.get(**key)
+        position.price = price
+        position.save()
 
 
 def update_price_database():
