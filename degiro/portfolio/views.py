@@ -1,6 +1,7 @@
 from django.views import generic
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Q
 from .lib.degiro_helpers import generate_portfolio_data, get_transactions, get_info_by_productId
 from .lib.yahoodata import get_yahoo_data, ffill_yahoo_data
 from .tables import PortfolioTable
@@ -52,7 +53,11 @@ def portfolio_performance(request):
     data = prices.to_json(orient='records')
 
     # calculate portfolio
-    included_positions = Depot.objects.filter(price__exact=0)
+    included_positions = Depot.objects.filter(~Q(price__exact=0))
+    portfolio_df = pd.DataFrame(list(included_positions.values()))
+    portfolio_df['total'] = portfolio_df.pieces * portfolio_df.price
+    performance_df = portfolio_df[['date', 'total']].groupby("date").sum()
+    int(0)
 
     return render(request, 'portfolio/portfolio-performance.html', {
         'data': data

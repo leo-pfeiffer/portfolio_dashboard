@@ -60,3 +60,18 @@ def get_info_by_productId(product_ids: list):
         data_out.append(D.getProductByIds(chunk))
 
     return data_out
+
+
+def get_cashflows(start_dt: datetime.date):
+    D = Degiro()
+    data = D.getAccountOverview(fromDate=start_dt.strftime(format="%d/%m/%Y"),
+                                toDate=datetime.date.today().strftime(format="%d/%m/%Y"))
+
+    df = pd.DataFrame(data)
+    df = df.loc[df.type == 'TRANSACTION'].sort_values("date")
+    df.date = df.date.apply(lambda x: x.date)
+    df = df[['date', 'change']].groupby('date').sum()
+    df = df.reset_index()
+
+    return df
+
