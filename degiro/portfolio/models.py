@@ -45,3 +45,9 @@ class Transactions(models.Model):
     feeInBaseCurrency = models.FloatField(default=None, blank=True, null=True)
     totalPlusFeeInBaseCurrency = models.FloatField(default=None, blank=True, null=True)
     transactionTypeId = models.IntegerField(default=None, blank=True, null=True)
+
+
+class Cashflows(models.Model):
+    date = models.DateField(unique=True)
+    cashflow = models.FloatField()
+    cumsum = models.FloatField()

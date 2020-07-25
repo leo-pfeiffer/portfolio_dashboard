@@ -3,8 +3,8 @@ import json
 import getpass
 from datetime import datetime, date
 from collections import defaultdict
-from settings import paths # if used outside of django
-# from .settings import paths  # if used with django
+# from settings import paths # if used outside of django
+from .settings import paths  # if used with django
 
 
 class Degiro:
