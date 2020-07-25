@@ -1,4 +1,5 @@
 from django.views import generic
+from django.http import HttpResponse
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
@@ -47,6 +48,16 @@ def portfolio_overview(request):
     out = PortfolioTable(df)
     RequestConfig(request).configure(out)
     return render(request, 'portfolio/portfolio-overview.html', {'table': out})
+
+
+def create_report(request):
+    # create report
+    # send report to e-mail
+    successful = False
+    if successful:
+        return render(request, 'portfolio/portfolio-create-report.html')
+    else:
+        return HttpResponse("<script>alert('Couldn\'t create report');</script>")
 
 
 def portfolio_performance(request):
