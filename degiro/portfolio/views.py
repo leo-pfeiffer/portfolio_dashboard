@@ -319,14 +319,15 @@ def refresh_cashflows():
     except KeyError:
         return None
 
-    cashflow_df['cumsum'] = cashflow_df.cashflow.cumsum()
-    cashflow_df.iloc[0, 2] += last_cumsum
+    if not cashflow_df.empty:
+        cashflow_df['cumsum'] = cashflow_df.cashflow.cumsum()
+        cashflow_df.iloc[0, 2] += last_cumsum
 
-    upload_df = pd.DataFrame(index=daterange(cashflow_df.iloc[0, 0], cashflow_df.iloc[-1, 0]))
-    upload_df = upload_df.merge(cashflow_df, left_index=True, right_on='date', how="left").set_index("date").ffill()
-    upload_df = upload_df.reset_index()
+        upload_df = pd.DataFrame(index=daterange(cashflow_df.iloc[0, 0], cashflow_df.iloc[-1, 0]))
+        upload_df = upload_df.merge(cashflow_df, left_index=True, right_on='date', how="left").set_index("date").ffill()
+        upload_df = upload_df.reset_index()
 
-    Cashflows.objects.bulk_create([Cashflows(**vals) for vals in upload_df.to_dict('records')])
+        Cashflows.objects.bulk_create([Cashflows(**vals) for vals in upload_df.to_dict('records')])
 
 
 def daily_depot_prices() -> pd.DataFrame:
