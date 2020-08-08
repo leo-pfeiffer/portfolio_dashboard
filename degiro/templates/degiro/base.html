@@ -1,4 +1,5 @@
 {% load static %}
+{% load widget_tweaks %}
 <!doctype html>
 <html lang="en">
     <!-- START OF HEADER-->
@@ -110,9 +111,8 @@
 					<h3 class="h6 mb-3">Request report</h3>
 					<form action="/portfolio/request-report/" method="post" class="subscribe-form">
 						<div class="form-group d-flex">
-							<div class="icon"><span class="icon-paper-plane"></span></div>
                             {% csrf_token %}
-							<input type="text" class="form-control" placeholder="Enter e-mail address">
+							<input id="email" type="text" class="form-control" placeholder="Enter e-mail address">
 						</div>
 					</form>
 				</div>
