@@ -76,9 +76,16 @@ def portfolio_performance(request):
     # data = prices.to_json(orient='records')
 
     # calculate portfolio
-    included_positions = Depot.objects.filter(~Q(price__exact=0))
+    # included_positions = Depot.objects.filter(~Q(price__exact=0))
+    included_positions = Depot.objects.all()
     portfolio_df = pd.DataFrame(list(included_positions.values()))
     portfolio_df['total'] = portfolio_df.pieces * portfolio_df.price
+
+    portfolio_df = portfolio_df[portfolio_df.symbol != 'BITCOIN XBTE']
+
+    first_zero_date = portfolio_df[portfolio_df.price == 0].sort_values('date').date.iloc[0]
+
+    portfolio_df = portfolio_df[portfolio_df.date < first_zero_date]
 
     performance_df = portfolio_df[['date', 'total']].groupby("date").sum()
     cashflow_df = pd.DataFrame(list(Cashflows.objects.all().values()))
@@ -89,10 +96,13 @@ def portfolio_performance(request):
     returns = merged.loc[:, ['date', 'return']]
     returns.columns = ['date1', 'price1']
 
+    timestamp = returns.date1.iloc[-1]
+
     data = returns.to_json(orient='records')
 
     return render(request, 'portfolio/portfolio-performance.html', {
-        'data': data
+        'data': data,
+        'timestamp': timestamp,
     })
 
 
