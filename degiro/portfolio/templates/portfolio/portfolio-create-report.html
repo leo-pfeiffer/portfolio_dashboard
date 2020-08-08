@@ -1,7 +1,9 @@
-﻿<html>
+﻿{% load static %}
+
  <head>
    <title>Test</title>
    <style>
+       #chartdiv {width: 70%; height: 400px; margin: 0 auto;}
      h1 {
        text-align: center;
      }
@@ -19,7 +21,14 @@
    </style>
  </head>
  <body>
+
    <h1>Depot</h1>
+
+    <div id="chartdiv">
+        <img src="{% static 'degiro/images/performance_graph.png' %}" alt="Performance chart">
+    </div>
+
+
    <table>
      <thead>
        <tr>
@@ -37,4 +46,3 @@
      </tbody>
    </table>
  </body>
-</html>

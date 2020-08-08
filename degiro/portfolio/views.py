@@ -6,6 +6,9 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Q
 from weasyprint import HTML
 
+from bokeh.plotting import figure, output_file, show
+from bokeh.io import export_png
+
 from .lib.degiro_helpers import generate_portfolio_data, get_transactions, get_info_by_productId, get_cashflows
 from .lib.helpers import daterange
 from .lib.yahoodata import get_yahoo_data, ffill_yahoo_data
@@ -55,6 +58,23 @@ def portfolio_overview(request):
 
 
 def create_report(request):
+
+    financial_data = get_yahoo_data(['DOCU'], start=datetime.date(2020, 1, 1), end=datetime.date(2020, 7, 11))
+    prices = financial_data.to_frame().reset_index()
+    prices.columns = ['date1', 'price1']
+    data = prices.to_json(orient='records')
+
+    p = figure(title="Portfolio performance", y_axis_type="linear", x_axis_type='datetime', 
+               plot_height=400, plot_width=800)
+    p.xaxis.axis_label = 'Date'
+    p.yaxis.axis_label = 'Performance index'
+
+    p.line(prices.date1, prices.price1, line_color="blue", line_width=3)
+    p.toolbar.logo = None
+    p.toolbar_location = None
+    output_file("static/degiro/images/line_chart.html", title="Line Chart")
+    export_png(p, filename="static/degiro/images/performance_graph.png")
+
     last_dt = Depot.objects.latest('date').date
     depot = Depot.objects.filter(date__exact=last_dt).values('symbol', 'pieces')
 
@@ -64,6 +84,10 @@ def create_report(request):
     response = HttpResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = 'filename="home_page.pdf"'
     return response
+
+
+def create_performance_time_series():
+    pass
 
 
 def portfolio_performance(request):
