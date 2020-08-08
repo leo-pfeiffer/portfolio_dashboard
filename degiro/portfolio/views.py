@@ -100,7 +100,7 @@ def create_report(request):
     html_object.write_pdf(report_path)
 
     # send mail
-    send_report(report_path=report_path)
+    # send_report(report_path=report_path)
 
     pdf_file = html_object.write_pdf()
     response = HttpResponse(pdf_file, content_type='application/pdf')
