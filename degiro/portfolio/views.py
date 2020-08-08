@@ -1,6 +1,6 @@
 from django.template.loader import render_to_string
 from django.views import generic
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
 from weasyprint import HTML
@@ -14,6 +14,7 @@ from .lib.yahoodata import get_yahoo_data, ffill_yahoo_data
 from .tables import PortfolioTable
 from django_tables2 import RequestConfig
 from .models import Depot, Transactions, Prices, Cashflows
+from .forms import RequestReportForm
 import datetime
 from dateutil.relativedelta import relativedelta
 from collections import Counter
@@ -155,6 +156,26 @@ def portfolio_depot(request):
     """portfolio depot view"""
     refresh_depot_data()
     return render(request, 'portfolio/portfolio-depot.html')
+
+
+def portfolio_request_report(request):
+    # if this is a POST request we need to process the form data
+    if request.method == 'POST':
+        # create a form instance and populate it with data from the request:
+        form = RequestReportForm(request.POST)
+        # check whether it's valid:
+        if form.is_valid():
+
+            send_report(receiver_mail=form.cleaned_data['email'],
+                        report_path="static/degiro/pdf/report.pdf")
+
+            return HttpResponseRedirect('#')
+
+    # if a GET (or any other method) we'll create a blank form
+    else:
+        form = RequestReportForm()
+
+    return render(request, 'portfolio/index.html', {'form': form})
 
 
 def refresh_depot_data():
@@ -396,3 +417,5 @@ def daily_depot_prices() -> pd.DataFrame:
     df = pd.merge(df_depot, df_prices, left_on=['date', 'symbol'], right_on=['date', 'symbol'], how='inner')
 
     return df
+
+

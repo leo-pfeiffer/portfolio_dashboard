@@ -107,11 +107,12 @@
 						</li>
 					</ul>
 				<div class="mb-5">
-					<h3 class="h6 mb-3">Subscribe for newsletter</h3>
-					<form action="#" class="subscribe-form">
+					<h3 class="h6 mb-3">Request report</h3>
+					<form action="/portfolio/request-report/" method="post" class="subscribe-form">
 						<div class="form-group d-flex">
 							<div class="icon"><span class="icon-paper-plane"></span></div>
-							<input type="text" class="form-control" placeholder="Enter Email Address">
+                            {% csrf_token %}
+							<input type="text" class="form-control" placeholder="Enter e-mail address">
 						</div>
 					</form>
 				</div>
