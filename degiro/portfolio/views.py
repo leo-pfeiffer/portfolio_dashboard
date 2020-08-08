@@ -29,6 +29,11 @@ class IndexView(generic.TemplateView):
         return render(request, self.template_name)
 
 
+def contact(request):
+    template_name = 'portfolio/contact.html'
+    return render(request, template_name)
+
+
 def initiate_portfolio():
     refresh_depot_data()
     update_price_database()
