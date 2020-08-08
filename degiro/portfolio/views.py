@@ -7,10 +7,10 @@ from django.db.models import Q
 from weasyprint import HTML
 
 from bokeh.plotting import figure, output_file, show
-from bokeh.io import export_png
+from bokeh.io import export_png, export_svgs
 
 from .lib.degiro_helpers import generate_portfolio_data, get_transactions, get_info_by_productId, get_cashflows
-from .lib.helpers import daterange
+from .lib.helpers import daterange, send_email
 from .lib.yahoodata import get_yahoo_data, ffill_yahoo_data
 from .tables import PortfolioTable
 from django_tables2 import RequestConfig
@@ -60,16 +60,18 @@ def portfolio_overview(request):
 def create_report(request):
 
     financial_data = get_yahoo_data(['DOCU'], start=datetime.date(2020, 1, 1), end=datetime.date(2020, 7, 11))
-    prices = financial_data.to_frame().reset_index()
-    prices.columns = ['date1', 'price1']
-    data = prices.to_json(orient='records')
+    data = financial_data.to_frame().reset_index()
+    data.columns = ['date1', 'price1']
+    timestamp = datetime.date.today()
 
-    p = figure(title="Portfolio performance", y_axis_type="linear", x_axis_type='datetime', 
+    # data, timestamp = create_performance_time_series()
+
+    p = figure(y_axis_type="linear", x_axis_type='datetime',
                plot_height=400, plot_width=800)
     p.xaxis.axis_label = 'Date'
     p.yaxis.axis_label = 'Performance index'
 
-    p.line(prices.date1, prices.price1, line_color="blue", line_width=3)
+    p.line(data.date1, data.price1, line_color="blue", line_width=3)
     p.toolbar.logo = None
     p.toolbar_location = None
     output_file("static/degiro/images/line_chart.html", title="Line Chart")
@@ -79,26 +81,22 @@ def create_report(request):
     depot = Depot.objects.filter(date__exact=last_dt).values('symbol', 'pieces')
 
     # Rendered
-    html_template = render_to_string('portfolio/portfolio-create-report.html', {'people': depot})
-    pdf_file = HTML(string=html_template).write_pdf()
+    context = {'people': depot, 'timestamp': timestamp}
+    html_template = render_to_string('portfolio/portfolio-create-report.html', context)
+    html_object = HTML(string=html_template, base_url=request.build_absolute_uri())
+    html_object.write_pdf("static/degiro/pdf/report.pdf")
+
+    # send mail
+    send_email('leopold.pfeiffer@gmx.de', 'Test Mail', 'This is a python test', "static/degiro/pdf/report.pdf")
+
+    pdf_file = html_object.write_pdf()
     response = HttpResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = 'filename="home_page.pdf"'
     return response
 
 
 def create_performance_time_series():
-    pass
-
-
-def portfolio_performance(request):
-    initiate_portfolio()
-
-    # dummy data
-    # financial_data = get_yahoo_data(['DOCU'], start=datetime.date(2020, 1, 1), end=datetime.date(2020, 7, 11))
-    # prices = financial_data.to_frame().reset_index()
-    # prices.columns = ['date1', 'price1']
-    # data = prices.to_json(orient='records')
-
+    """Create a dataframe containing the returns time series up to timestamp"""
     # calculate portfolio
     # included_positions = Depot.objects.filter(~Q(price__exact=0))
     included_positions = Depot.objects.all()
@@ -122,6 +120,22 @@ def portfolio_performance(request):
 
     timestamp = returns.date1.iloc[-1]
 
+    return returns, timestamp
+
+
+def portfolio_performance(request):
+    """Portfolio performance view"""
+    initiate_portfolio()
+
+    # dummy data
+    # financial_data = get_yahoo_data(['DOCU'], start=datetime.date(2020, 1, 1), end=datetime.date(2020, 7, 11))
+    # prices = financial_data.to_frame().reset_index()
+    # prices.columns = ['date1', 'price1']
+    # data = prices.to_json(orient='records')
+    # timestamp = datetime.date.today()
+
+    returns, timestamp = create_performance_time_series()
+
     data = returns.to_json(orient='records')
 
     return render(request, 'portfolio/portfolio-performance.html', {
@@ -131,6 +145,7 @@ def portfolio_performance(request):
 
 
 def portfolio_depot(request):
+    """portfolio depot view"""
     refresh_depot_data()
     return render(request, 'portfolio/portfolio-depot.html')
 
