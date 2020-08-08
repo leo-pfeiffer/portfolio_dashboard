@@ -1,13 +1,12 @@
-from django.template.loader import render_to_string, get_template
+from django.template.loader import render_to_string
 from django.views import generic
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models import Q
 from weasyprint import HTML
 
-from bokeh.plotting import figure, output_file, show
-from bokeh.io import export_png, export_svgs
+from bokeh.plotting import figure, output_file
+from bokeh.io import export_png
 
 from .lib.degiro_helpers import generate_portfolio_data, get_transactions, get_info_by_productId, get_cashflows
 from .lib.helpers import daterange, send_email
@@ -16,10 +15,8 @@ from .tables import PortfolioTable
 from django_tables2 import RequestConfig
 from .models import Depot, Transactions, Prices, Cashflows
 import datetime
-import tempfile
 from dateutil.relativedelta import relativedelta
 from collections import Counter
-import numpy as np
 import pandas as pd
 
 
@@ -48,6 +45,14 @@ def portfolio_allocation(request):
         'labels': labels,
         'data': data,
     })
+
+
+def send_report(report_path: str, **kwargs):
+    receiver_mail = kwargs.get('receiver_mail', 'leopold.pfeiffer@gmx.de')
+    subject = kwargs.get('subject', 'Your Degiro Report')
+    body = kwargs.get('body', 'Hello,\n\nPlease find attached your current Degiro portfolio report.\n\nKind regards,'
+                              '\nLeopold\n\n')
+    send_email(receiver_mail, subject, body, report_path)
 
 
 def portfolio_overview(request):
@@ -81,13 +86,15 @@ def create_report(request):
     depot = Depot.objects.filter(date__exact=last_dt).values('symbol', 'pieces')
 
     # Rendered
+    report_path = "static/degiro/pdf/report.pdf"
+
     context = {'people': depot, 'timestamp': timestamp}
     html_template = render_to_string('portfolio/portfolio-create-report.html', context)
     html_object = HTML(string=html_template, base_url=request.build_absolute_uri())
-    html_object.write_pdf("static/degiro/pdf/report.pdf")
+    html_object.write_pdf(report_path)
 
     # send mail
-    send_email('leopold.pfeiffer@gmx.de', 'Test Mail', 'This is a python test', "static/degiro/pdf/report.pdf")
+    send_report(report_path=report_path)
 
     pdf_file = html_object.write_pdf()
     response = HttpResponse(pdf_file, content_type='application/pdf')
