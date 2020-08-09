@@ -66,14 +66,13 @@
     <div class="header">
       <a href="/portfolio" class="logo">Degiro</a>
       <div class="header-right">
-        <a class="active" href="/portfolio">Home</a>
-        <a href="/portfolio/contact">Contact</a>
+        <a class="active" href="/portfolio">Startseite</a>
+        <a href="/portfolio/contact">Kontakt</a>
       </div>
     </div>
     </body>
     <!-- END OF HEADER -->
   <head>
-  	<title>Degiro</title>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
@@ -91,27 +90,27 @@
 			<div class="p-4">
 					<ul class="list-unstyled components mb-5">
 						<li class="active">
-							<a href="/portfolio"><span class="fa fa-home mr-3"></span> Home</a>
+							<a href="/portfolio"><span class="fa fa-home mr-3"></span> Startseite</a>
 						</li>
 						<li>
 							<a href="/portfolio/portfolio-overview"><span class="fa fa-user mr-3"></span> Portfolio</a>
 						</li>
 						<li>
-							<a href="/portfolio/portfolio-allocation"><span class="fa fa-briefcase mr-3"></span> Allocation</a>
+							<a href="/portfolio/portfolio-allocation"><span class="fa fa-briefcase mr-3"></span> Allokation</a>
 						</li>
 						<li>
-							<a href="/portfolio/portfolio-performance"><span class="fa fa-sticky-note mr-3"></span> Performance</a>
+							<a href="/portfolio/portfolio-performance"><span class="fa fa-sticky-note mr-3"></span> Wertentwicklung</a>
 						</li>
 						<li>
-                            <a href="/portfolio/portfolio-create-report"><span class="fa fa-sticky-note mr-3"></span> Create Report</a>
+                            <a href="/portfolio/portfolio-create-report"><span class="fa fa-sticky-note mr-3"></span> Report erstellen</a>
 						</li>
 					</ul>
 				<div class="mb-5">
-					<h3 class="h6 mb-3">Request report</h3>
+					<h3 class="h6 mb-3">Report anfordern</h3>
 					<form action="/portfolio/request-report/" method="post" class="subscribe-form">
 						<div class="form-group d-flex">
                             {% csrf_token %}
-							<input id="email" name="email" type="text" class="form-control" placeholder="Enter e-mail address">
+							<input id="email" name="email" type="text" class="form-control" placeholder="E-Mail Adresse">
 						</div>
 					</form>
 				</div>
