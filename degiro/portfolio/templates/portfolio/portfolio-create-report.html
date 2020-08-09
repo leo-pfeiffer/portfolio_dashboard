@@ -15,6 +15,7 @@
     }
 
     .header {
+        font-size: 14px;
         overflow: hidden;
         background-color: #009fdf;
         padding: 10px 10px;
@@ -24,6 +25,7 @@
         text-align: left;
         margin: 0;
         background-color: #e3e3e3;
+        word-wrap: break-word;
     }
 
 
@@ -48,17 +50,21 @@
       <body>
         <div class="header">
           <b>Degiro Depot Report</b>
-          <p>{{ timestamp|safe }}</p>
+          <p style="font-size: 12px">{{ today|safe }}</p>
       </div>
     </body>
  </head>
  <body>
-    <h4>Performance Chart seit Auflage</h4>
+    <h4>Performance seit Auflage</h4>
     <div id="chartdiv">
         <img src="{% static 'degiro/images/performance_graph.png' %}" alt='Performance Chart' style="width:600px;height:300px;">
     </div>
     <div class="explanation">
-        <p>Der Chart zeigt die Performance seit Auflage des Depots als Performance Index.</p>
+        <p>Der Chart und die Tabelle zeigen die Performance seit Auflage des Depots bis {{ timestamp|safe }}.
+            Die aufgeführten Zahlen beziehen sich auf die Wertentwicklung in der Vergangenheit.
+            Die Wertentwicklung in der Vergangenheit ist kein zuverlässiger Indikator für die aktuelle
+            oder künftige Entwicklung und sollte nicht der alleinige Entscheidungsfaktor bei der
+            Auswahl eines Produkts oder einer Anlagestrategie sein.</p>
     </div>
     <h4>Aktuelle Positionen</h4>
    <table>

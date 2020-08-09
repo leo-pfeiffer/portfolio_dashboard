@@ -75,12 +75,13 @@ def portfolio_overview(request):
 
 def create_report(request):
 
-    financial_data = get_yahoo_data(['DOCU'], start=datetime.date(2020, 1, 1), end=datetime.date(2020, 7, 11))
-    data = financial_data.to_frame().reset_index()
-    data.columns = ['date1', 'price1']
-    timestamp = datetime.date.today()
+    # financial_data = get_yahoo_data(['DOCU'], start=datetime.date(2020, 1, 1), end=datetime.date(2020, 7, 11))
+    # data = financial_data.to_frame().reset_index()
+    # data.columns = ['date1', 'price1']
+    # timestamp = datetime.date.today()
 
-    # data, timestamp = create_performance_time_series()
+    data, timestamp = create_performance_time_series()
+    today = datetime.date.today()
 
     p = figure(y_axis_type="linear", x_axis_type='datetime',
                plot_height=400, plot_width=800)
@@ -98,7 +99,7 @@ def create_report(request):
     # Rendered
     report_path = "static/degiro/pdf/report.pdf"
 
-    context = {'depot': depot, 'timestamp': timestamp}
+    context = {'depot': depot, 'today': today, 'timestamp': timestamp}
     html_template = render_to_string('portfolio/portfolio-create-report.html', context)
     html_object = HTML(string=html_template, base_url=request.build_absolute_uri())
     html_object.write_pdf(report_path)
