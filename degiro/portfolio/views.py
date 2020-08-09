@@ -61,8 +61,13 @@ def send_report(report_path: str, **kwargs):
     send_email(receiver_mail, subject, body, report_path)
 
 
-def portfolio_overview(request):
+def generate_overview():
     df = generate_portfolio_data().reset_index().rename(columns={'index': 'Symbol'}).to_dict('records')
+    return df
+
+
+def portfolio_overview(request):
+    df = generate_overview()
     out = PortfolioTable(df)
     RequestConfig(request).configure(out)
     return render(request, 'portfolio/portfolio-overview.html', {'table': out})
@@ -88,13 +93,12 @@ def create_report(request):
     output_file("static/degiro/images/line_chart.html", title="Line Chart")
     export_png(p, filename="static/degiro/images/performance_graph.png")
 
-    last_dt = Depot.objects.latest('date').date
-    depot = Depot.objects.filter(date__exact=last_dt).values('symbol', 'pieces')
+    depot = generate_overview()
 
     # Rendered
     report_path = "static/degiro/pdf/report.pdf"
 
-    context = {'people': depot, 'timestamp': timestamp}
+    context = {'depot': depot, 'timestamp': timestamp}
     html_template = render_to_string('portfolio/portfolio-create-report.html', context)
     html_object = HTML(string=html_template, base_url=request.build_absolute_uri())
     html_object.write_pdf(report_path)
