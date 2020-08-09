@@ -1,4 +1,5 @@
 {% extends 'degiro/base.html' %}
+{% load static %}
 {% block content %}
 <style>
     .link-table {
@@ -6,6 +7,9 @@
     }
 
     .td-even {
+        padding-bottom: 30px;
+        padding-top: 30px;
+        width: 25%;
         background-color: #e3e3e3;
         color: #009fdf;
         text-align: center;
@@ -13,10 +17,18 @@
     }
 
     .td-odd {
+        padding-bottom: 30px;
+        padding-top: 30px;
+        width: 25%;
         background-color: #009fdf;
         color: #e3e3e3;
         text-align: center;
         vertical-align: center;
+    }
+
+    .link-title {
+        font-size: 18px;
+        padding-top: 30px;
     }
 </style>
 
@@ -28,10 +40,22 @@
     <table class="link-table">
         <tbody>
          <tr>
-           <td class="td-odd" id="overview-box">Hello</td>
-           <td class="td-even" id="allocation-box">World</td>
-           <td class="td-odd" id="performance-box">Hello</td>
-           <td class="td-even" id="report-box">World</td>
+           <td class="td-odd" id="overview-box">
+               <img src="{% static 'degiro/images/menu_light.png' %}" alt='Menu symbol' style="width: 15%;">
+               <div class="link-title">Portfolio</div>
+           </td>
+           <td class="td-even" id="allocation-box">
+               <img src="{% static 'degiro/images/pie_chart_blue.png' %}" alt='Pie Chart symbol' style="width: 15%;">
+               <div class="link-title">Allokation</div>
+           </td>
+           <td class="td-odd" id="performance-box">
+               <img src="{% static 'degiro/images/graph_light.png' %}" alt='Graph symbol' style="width: 15%;">
+               <div class="link-title">Wertentwicklung</div>
+           </td>
+           <td class="td-even" id="report-box">
+               <img src="{% static 'degiro/images/report_blue.png' %}" alt='Report symbol' style="width: 15%;">
+               <div class="link-title">Report</div>
+           </td>
          </tr>
         </tbody>
     </table>
