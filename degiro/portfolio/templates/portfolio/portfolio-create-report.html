@@ -1,12 +1,12 @@
 ﻿{% load static %}
 
  <head>
-   <title>Test</title>
+   <title>Degiro Depot Report</title>
    <style>
        @page {
            @bottom-center {
-               font-family: Arial, Helvetica, sans-serif;
                font-size: 10px;
+               font-family: Arial, Helvetica, sans-serif;
                content: "Seite " counter(page) " von " counter(pages);
            }
        }
@@ -15,44 +15,54 @@
 
        * {box-sizing: border-box;}
 
+       body {
+           margin-bottom: 20px;
+           font-family: Arial, Helvetica, sans-serif;
+           font-size: 12px;
+       }
 
-    body {
-        margin-bottom: 10px;
-        font-family: Arial, Helvetica, sans-serif;
-        font-size: 12px;
-    }
+       .header {
+           color: white;
+           font-size: 14px;
+           overflow: hidden;
+           background-color: #009fdf;
+           padding: 10px 10px;
+       }
+       .explanation {
+           text-align: left;
+           margin: 0;
+           background-color: #e3e3e3;
+           word-wrap: break-word;
+       }
 
-    .header {
-        font-size: 14px;
-        overflow: hidden;
-        background-color: #009fdf;
-        padding: 10px 10px;
-    }
+       footer {
+           position: fixed;
+           bottom: 0;
+           left: 0;
+           width: 100%;
+           color: white;
+           font-size: 10px;
+           overflow: hidden;
+           background-color: #009fdf;
+           padding: 10px 10px;
+       }
 
-    .explanation {
-        text-align: left;
-        margin: 0;
-        background-color: #e3e3e3;
-        word-wrap: break-word;
-    }
+       h4 {
+           text-align: left;
+           margin-top: 20px;
+       }
 
+       table {
+           width: 100%;
+           border: 1px solid;
+           border-collapse: collapse;
+           margin: 0 auto;
+       }
 
-     h4 {
-         text-align: left;
-         margin-top: 20px;
-     }
-
-     table {
-         width: 100%;
-         border: 1px solid;
-         border-collapse: collapse;
-         margin: 0 auto;
-     }
-
-     td, th {
-         text-align: center;
-         border: 1px solid;
-     }
+       td, th {
+           text-align: center;
+           border: 1px solid;
+       }
    </style>
      <link rel="shortcut icon" href="{% static 'degiro/images/favicon.ico' %}" />
       <body>
@@ -125,3 +135,4 @@
         </p>
     </div>
  </body>
+
