@@ -3,9 +3,17 @@
  <head>
    <title>Test</title>
    <style>
-     #chartdiv {width: 70%; height: 300px; margin-bottom: 10px; margin-top: 10px;}
+       @page {
+           @bottom-center {
+               font-family: Arial, Helvetica, sans-serif;
+               font-size: 10px;
+               content: "Seite " counter(page) " von " counter(pages);
+           }
+       }
 
-     * {box-sizing: border-box;}
+       #chartdiv {width: 70%; height: 300px; margin-bottom: 10px; margin-top: 10px;}
+
+       * {box-sizing: border-box;}
 
 
     body {
@@ -55,13 +63,35 @@
     </body>
  </head>
  <body>
-    <h4>Performance seit Auflage</h4>
+    <h4>Wertentwicklung seit Auflage</h4>
     <div id="chartdiv">
         <img src="{% static 'degiro/images/performance_graph.png' %}" alt='Performance Chart' style="width:600px;height:300px;">
     </div>
+    <table>
+     <thead>
+       <tr>
+           <th>Rendite</th>
+           <th>Rendite (p.a.)</th>
+           <th>Volatilit&auml;t</th>
+           <th>Sharpe</th>
+           <th>VaR</th>
+           <th>Max. Drawdown</th>
+       </tr>
+     </thead>
+     <tbody>
+         <tr>
+           <td>{{ measure_data.returns }}</td>
+           <td>{{ measure_data.annualized_returns }}</td>
+           <td>{{ measure_data.std }}</td>
+           <td>{{ measure_data.sharpe }}</td>
+           <td>{{ measure_data.var }}</td>
+           <td>{{ measure_data.max_drawdown }}</td>
+         </tr>
+     </tbody>
+   </table>
     <div class="explanation">
-        <p>Der Chart und die Tabelle zeigen die Performance seit Auflage des Depots bis {{ timestamp|safe }}.
-            Die aufgeführten Zahlen beziehen sich auf die Wertentwicklung in der Vergangenheit.
+        <p>Der Chart und die Tabelle zeigen die Performance seit Auflage des Depots {{ start_date|safe }}
+            bis {{ timestamp|safe }}. Die aufgeführten Zahlen beziehen sich auf die Wertentwicklung in der Vergangenheit.
             Die Wertentwicklung in der Vergangenheit ist kein zuverlässiger Indikator für die aktuelle
             oder künftige Entwicklung und sollte nicht der alleinige Entscheidungsfaktor bei der
             Auswahl eines Produkts oder einer Anlagestrategie sein.</p>
@@ -89,4 +119,9 @@
        {% endfor %}    
      </tbody>
    </table>
+     <div class="explanation">
+        <p>Dargestellt werden alle aktuell gehaltenen Positionen zum Stand: {% now "SHORT_DATETIME_FORMAT" %}.
+        Alle Preisangaben sind in der W&auml;hrung der jeweiligen Heimatb&ouml;rse gehalten.
+        </p>
+    </div>
  </body>

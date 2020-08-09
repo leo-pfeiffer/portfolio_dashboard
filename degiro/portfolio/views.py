@@ -79,6 +79,7 @@ def create_report(request):
     financial_data = get_yahoo_data(['DOCU'], start=datetime.date(2020, 1, 1), end=datetime.date(2020, 7, 11))
     data = financial_data.to_frame().reset_index()
     data.columns = ['date1', 'price1']
+    data.price1 = (data.price1.pct_change().fillna(0) + 1).cumprod()
 
     timestamp = datetime.date.today()
 
@@ -86,21 +87,24 @@ def create_report(request):
 
     perf_series = data.price1
     perf_series.index = data.date1
-    perf_series = (perf_series.pct_change().fillna(0) + 1).cumprod()
 
     measure_data = measure_loop(perf_series)
 
     for key, value in measure_data.items():
-        measure_data[key] = np.round(4)
+        if key == 'sharpe':
+            measure_data[key] = np.round(value, 2)
+        else:
+            measure_data[key] = '{:.2%}'.format(value)
 
+    start_date = data.date1.iloc[0]
     today = datetime.date.today()
 
     p = figure(y_axis_type="linear", x_axis_type='datetime',
                plot_height=400, plot_width=800)
-    p.xaxis.axis_label = 'Date'
-    p.yaxis.axis_label = 'Performance index'
+    p.xaxis.axis_label = 'Datum'
+    p.yaxis.axis_label = 'Wertentwicklung (indiziert)'
 
-    p.line(data.date1, data.price1, line_color="blue", line_width=3)
+    p.line(data.date1, data.price1, line_color="#009fdf", line_width=3)
     p.toolbar.logo = None
     p.toolbar_location = None
     output_file("static/degiro/images/line_chart.html", title="Line Chart")
@@ -111,7 +115,8 @@ def create_report(request):
     # Rendered
     report_path = "static/degiro/pdf/report.pdf"
 
-    context = {'depot': depot, 'today': today, 'timestamp': timestamp, 'measure_data': measure_data}
+    context = {'depot': depot, 'today': today, 'start_date': start_date, 'timestamp': timestamp,
+               'measure_data': measure_data}
     html_template = render_to_string('portfolio/portfolio-create-report.html', context)
     html_object = HTML(string=html_template, base_url=request.build_absolute_uri())
     html_object.write_pdf(report_path)
