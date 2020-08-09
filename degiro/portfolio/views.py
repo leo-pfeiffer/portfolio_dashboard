@@ -1,3 +1,5 @@
+import json
+
 from django.template.loader import render_to_string
 from django.views import generic
 from django.http import HttpResponse, HttpResponseRedirect
@@ -8,13 +10,14 @@ from weasyprint import HTML
 from bokeh.plotting import figure, output_file
 from bokeh.io import export_png
 
+from .lib.api.settings import paths
 from .lib.degiro_helpers import generate_portfolio_data, get_transactions, get_info_by_productId, get_cashflows
 from .lib.helpers import daterange, send_email, measure_loop
 from .lib.yahoodata import get_yahoo_data, ffill_yahoo_data
 from .tables import PortfolioTable
 from django_tables2 import RequestConfig
 from .models import Depot, Transactions, Prices, Cashflows
-from .forms import RequestReportForm
+from .forms import RequestReportForm, ContactForm
 import datetime
 from dateutil.relativedelta import relativedelta
 from collections import Counter
@@ -32,7 +35,36 @@ class IndexView(generic.TemplateView):
 
 def contact(request):
     template_name = 'portfolio/contact.html'
-    return render(request, template_name)
+
+    if request.method == 'POST':
+        form = ContactForm(request.POST)
+        if form.is_valid():
+
+            conf_path = paths.SETTINGS + '/mail.json'
+            conf = json.load(open(conf_path))
+
+            receiver_email = conf['email']
+            sender_email = form.cleaned_data['email']
+            sender_name = form.cleaned_data['name']
+            subject = form.cleaned_data['subject']
+            content = form.cleaned_data['content']
+            timestamp = datetime.datetime.strftime(datetime.datetime.now(), format='%Y-%m-%d %H:%M:%S')
+
+            body = f'Neue Mail via Kontaktformular.' \
+                   f'\nAbsender: {sender_name}.' \
+                   f'\nE-Mail: {sender_email}' \
+                   f'\nTimestamp: {timestamp}' \
+                   f'\n\n--------------------\n\n' \
+                   f'{content}'
+
+            send_email(receiver_email=receiver_email, subject=subject, body=body)
+
+            return HttpResponseRedirect('#')
+
+    else:
+        form = ContactForm()
+
+    return render(request, template_name, {'form': form})
 
 
 def initiate_portfolio():

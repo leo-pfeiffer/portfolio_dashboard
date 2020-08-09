@@ -1,11 +1,21 @@
 {% extends 'degiro/base.html' %}
 {% block content %}
+    <style>
+    .cform {
+        width: 350px;
+        padding: 20px;
+        }
+    </style>
 <head>
     <meta charset="UTF-8">
     <title>Contact</title>
 </head>
 <body>
-    <p>Please direct any issues to leopold.pfeiffer@gmx.de</p>
+    <form role="form" class="cform" action="" method="post">
+        {% csrf_token %}
+        {{ form }}
+    <button type="submit">Submit</button>
+</form>
 </body>
 {% endblock %}
 

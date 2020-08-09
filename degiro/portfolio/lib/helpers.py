@@ -18,7 +18,8 @@ def daterange(start_date, end_date):
         yield start_date + datetime.timedelta(n)
 
 
-def send_email(receiver_email: str, subject: str, body: str, filename: str):
+def send_email(receiver_email: str, subject: str, body: str, filename=None):
+
     conf_path = paths.SETTINGS + '/mail.json'
     conf = json.load(open(conf_path))
 
