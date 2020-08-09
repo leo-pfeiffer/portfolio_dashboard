@@ -1,6 +1,7 @@
 import datetime
 import json
 import smtplib
+import pandas as pd
 
 from email import encoders
 from email.mime.multipart import MIMEMultipart
@@ -9,6 +10,7 @@ from email.mime.text import MIMEText
 
 import ssl
 from .api.settings import paths
+from .performance_measures import returns, annualized_returns, std, sharpe, var, max_drawdown
 
 
 def daterange(start_date, end_date):
@@ -56,3 +58,23 @@ def send_email(receiver_email: str, subject: str, body: str, filename: str):
         server.sendmail(sender_email, receiver_email, text)
 
 
+def measure_loop(portfolio_df: pd.series) -> dict:
+    switcher = {
+        1: returns,
+        2: annualized_returns,
+        3: std,
+        4: sharpe,
+        5: var,
+        8: max_drawdown,
+        10: daterange
+    }
+
+    data = {}
+    for key in switcher.keys():
+        measure = switcher.get(key)
+        data = {**data, **measure(portfolio_df)}
+
+    return data
+
+# portfolio_df = get_portfolio().iloc[:, 8]
+# result = measure_loop(portfolio_df)
