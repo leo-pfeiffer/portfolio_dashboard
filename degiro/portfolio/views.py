@@ -9,7 +9,7 @@ from bokeh.plotting import figure, output_file
 from bokeh.io import export_png
 
 from .lib.degiro_helpers import generate_portfolio_data, get_transactions, get_info_by_productId, get_cashflows
-from .lib.helpers import daterange, send_email
+from .lib.helpers import daterange, send_email, measure_loop
 from .lib.yahoodata import get_yahoo_data, ffill_yahoo_data
 from .tables import PortfolioTable
 from django_tables2 import RequestConfig
@@ -19,6 +19,7 @@ import datetime
 from dateutil.relativedelta import relativedelta
 from collections import Counter
 import pandas as pd
+import numpy as np
 
 
 class IndexView(generic.TemplateView):
@@ -75,12 +76,23 @@ def portfolio_overview(request):
 
 def create_report(request):
 
-    # financial_data = get_yahoo_data(['DOCU'], start=datetime.date(2020, 1, 1), end=datetime.date(2020, 7, 11))
-    # data = financial_data.to_frame().reset_index()
-    # data.columns = ['date1', 'price1']
-    # timestamp = datetime.date.today()
+    financial_data = get_yahoo_data(['DOCU'], start=datetime.date(2020, 1, 1), end=datetime.date(2020, 7, 11))
+    data = financial_data.to_frame().reset_index()
+    data.columns = ['date1', 'price1']
 
-    data, timestamp = create_performance_time_series()
+    timestamp = datetime.date.today()
+
+    # data, timestamp = create_performance_time_series()
+
+    perf_series = data.price1
+    perf_series.index = data.date1
+    perf_series = (perf_series.pct_change().fillna(0) + 1).cumprod()
+
+    measure_data = measure_loop(perf_series)
+
+    for key, value in measure_data.items():
+        measure_data[key] = np.round(4)
+
     today = datetime.date.today()
 
     p = figure(y_axis_type="linear", x_axis_type='datetime',
@@ -99,7 +111,7 @@ def create_report(request):
     # Rendered
     report_path = "static/degiro/pdf/report.pdf"
 
-    context = {'depot': depot, 'today': today, 'timestamp': timestamp}
+    context = {'depot': depot, 'today': today, 'timestamp': timestamp, 'measure_data': measure_data}
     html_template = render_to_string('portfolio/portfolio-create-report.html', context)
     html_object = HTML(string=html_template, base_url=request.build_absolute_uri())
     html_object.write_pdf(report_path)

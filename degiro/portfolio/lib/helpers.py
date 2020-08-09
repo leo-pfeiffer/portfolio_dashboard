@@ -58,15 +58,14 @@ def send_email(receiver_email: str, subject: str, body: str, filename: str):
         server.sendmail(sender_email, receiver_email, text)
 
 
-def measure_loop(portfolio_df: pd.series) -> dict:
+def measure_loop(portfolio_df: pd.Series) -> dict:
     switcher = {
         1: returns,
         2: annualized_returns,
         3: std,
         4: sharpe,
         5: var,
-        8: max_drawdown,
-        10: daterange
+        6: max_drawdown,
     }
 
     data = {}
