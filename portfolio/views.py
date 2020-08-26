@@ -42,7 +42,6 @@ def contact(request):
     if request.method == 'POST':
         form = ContactForm(request.POST)
         if form.is_valid():
-
             conf_path = paths.SETTINGS + '/mail.json'
             conf = json.load(open(conf_path))
 
@@ -110,7 +109,6 @@ def portfolio_overview(request):
 
 
 def create_report(request):
-
     financial_data = get_yahoo_data(['DOCU'], start=datetime.date(2020, 1, 1), end=datetime.date(2020, 7, 11))
     data = financial_data.to_frame().reset_index()
     data.columns = ['date1', 'price1']
@@ -176,15 +174,16 @@ def create_performance_time_series():
 
     portfolio_df = portfolio_df[portfolio_df.symbol != 'BITCOIN XBTE']
 
-    first_zero_date = portfolio_df[portfolio_df.price == 0].sort_values('date').date.iloc[0]
-
-    portfolio_df = portfolio_df[portfolio_df.date < first_zero_date]
+    null_prices = portfolio_df[portfolio_df.price == 0]
+    if not null_prices.empty:
+        first_zero_date = null_prices.sort_values('date').date.iloc[0]
+        portfolio_df = portfolio_df[portfolio_df.date < first_zero_date]
 
     performance_df = portfolio_df[['date', 'total']].groupby("date").sum()
     cashflow_df = pd.DataFrame(list(Cashflows.objects.all().values()))
 
     merged = pd.merge(performance_df, cashflow_df.loc[:, ['date', 'cumsum']], left_index=True, right_on='date')
-    merged['return'] = merged['total']/merged['cumsum']
+    merged['return'] = merged['total'] / merged['cumsum']
 
     returns = merged.loc[:, ['date', 'return']]
     returns.columns = ['date1', 'price1']
@@ -228,7 +227,6 @@ def portfolio_request_report(request):
         form = RequestReportForm(request.POST)
         # check whether it's valid:
         if form.is_valid():
-
             send_report(receiver_mail=form.cleaned_data['email'],
                         report_path="static/degiro/pdf/report.pdf")
 
@@ -390,6 +388,27 @@ def refresh_price_data(df):
 
     keys = list(updatable_objects.values('symbol', 'date'))
 
+    # Todo The following doesn't work yet.
+    # todo if keys only contains BITCOIN XBTE then download latest available depot data and use it for ffill
+    depot_df = pd.DataFrame(keys)
+
+    latest_date = depot_df.sort_values('date').iloc[0].values[1]
+
+    ffill_dates = daterange(latest_date + relativedelta(days=1), datetime.date.today() - relativedelta(days=1))
+
+    saved_depot = depot_df[depot_df.date == latest_date]
+
+    for date in ffill_dates:
+        depot_on_date = depot_df[depot_df.date == date]
+        if depot_on_date.empty:
+            depot_on_date = saved_depot.copy()
+            depot_on_date['date'] = date
+            depot_df.append(depot_on_date).reset_index(drop=True)
+        else:
+            saved_depot = depot_on_date.copy()
+
+    keys = depot_df.to_dict('records')
+
     for key in keys:
         # get price from database
         try:
@@ -429,6 +448,7 @@ def update_price_database():
         if yahoo_df.empty:
             print('Yahoo Finance didn\'t return anything.')
             return None
+
         ffilled_df = ffill_yahoo_data(yahoo_df).reset_index()
 
         df_out = pd.melt(ffilled_df, id_vars='index')
@@ -437,6 +457,7 @@ def update_price_database():
             dropped = list(df_out.iloc[df_out['price'].isna().values,]['symbol'].unique())
             df_out = df_out.dropna()
             print(f'Found NA values. Dropped {dropped}.')
+
         dict_out = df_out.to_dict('records')
 
         Prices.objects.bulk_create([Prices(**vals) for vals in dict_out])
@@ -476,9 +497,8 @@ def daily_depot_prices() -> pd.DataFrame:
     """
     df_depot = pd.DataFrame(list(Depot.objects.all().values())).loc[:, ['symbol', 'pieces', 'date']]
     start_date = df_depot['date'].min()
-    df_prices = pd.DataFrame(list(Prices.objects.filter(date__gte=start_date).values())).loc[:, ['symbol', 'date', 'price']]
+    df_prices = pd.DataFrame(list(Prices.objects.filter(date__gte=start_date).values())).loc[:,
+                ['symbol', 'date', 'price']]
     df = pd.merge(df_depot, df_prices, left_on=['date', 'symbol'], right_on=['date', 'symbol'], how='inner')
 
     return df
-
-
