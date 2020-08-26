@@ -1,4 +1,5 @@
 import json
+import os
 
 from django.template.loader import render_to_string
 from django.views import generic
@@ -10,6 +11,7 @@ from weasyprint import HTML
 from bokeh.plotting import figure, output_file
 from bokeh.io import export_png
 
+from degiro.settings import IMAGES, PDFS
 from .lib.api.settings import paths
 from .lib.degiro_helpers import generate_portfolio_data, get_transactions, get_info_by_productId, get_cashflows
 from .lib.helpers import daterange, send_email, measure_loop
@@ -21,6 +23,7 @@ from .forms import RequestReportForm, ContactForm
 import datetime
 from dateutil.relativedelta import relativedelta
 from collections import Counter
+
 import pandas as pd
 import numpy as np
 
@@ -140,12 +143,13 @@ def create_report(request):
     p.toolbar.logo = None
     p.toolbar_location = None
     output_file("static/degiro/images/line_chart.html", title="Line Chart")
-    export_png(p, filename="static/degiro/images/performance_graph.png")
+    file_path = os.path.join(IMAGES, 'performance_graph.png')
+    export_png(p, filename=file_path)
 
     depot = generate_overview()
 
     # Rendered
-    report_path = "static/degiro/pdf/report.pdf"
+    report_path = os.path.join(PDFS, 'report.pdf')
 
     context = {'depot': depot, 'today': today, 'start_date': start_date, 'timestamp': timestamp,
                'measure_data': measure_data}

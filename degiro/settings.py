@@ -122,3 +122,5 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static/')]
+IMAGES = os.path.join(BASE_DIR, 'static/degiro/images/')
+PDFS = os.path.join(BASE_DIR, 'static/degiro/pdf/')
