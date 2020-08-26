@@ -1,4 +1,4 @@
-BASE = '/Users/leopoldpfeiffer/PycharmProjects/degiro/degiro'
+BASE = '/Users/leopoldpfeiffer/PycharmProjects/degiro'
 PORTFOLIO = BASE + '/portfolio'
 LIB = PORTFOLIO + '/lib'
 API = LIB + '/api'
