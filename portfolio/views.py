@@ -179,10 +179,29 @@ def create_performance_time_series():
         first_zero_date = null_prices.sort_values('date').date.iloc[0]
         portfolio_df = portfolio_df[portfolio_df.date < first_zero_date]
 
+    latest_date = portfolio_df.sort_values('date').iloc[-1].values[3]
+    end_date = datetime.date.today() - relativedelta(days=1)
+    ffill_dates = [*daterange(latest_date + relativedelta(days=1), end_date)]
+
+    saved_depot = portfolio_df[portfolio_df.date == latest_date].loc[:,['id', 'symbol', 'pieces']]
+
+    prices = Prices.objects.filter(date__in=[*ffill_dates]).all()
+    prices_df = pd.DataFrame(list(prices.values()))
+    prices_df = prices_df.loc[:, ['symbol', 'date', 'price']]
+
+    for date in ffill_dates:
+        depot_on_date = saved_depot.copy()
+        depot_on_date['date'] = date
+        depot_on_date = pd.merge(depot_on_date, prices_df, on=['symbol', 'date'])
+        depot_on_date['total'] = depot_on_date.pieces * depot_on_date.price
+        portfolio_df = portfolio_df.append(depot_on_date).reset_index(drop=True)
+
     performance_df = portfolio_df[['date', 'total']].groupby("date").sum()
+
     cashflow_df = pd.DataFrame(list(Cashflows.objects.all().values()))
 
-    merged = pd.merge(performance_df, cashflow_df.loc[:, ['date', 'cumsum']], left_index=True, right_on='date')
+    merged = pd.merge(performance_df, cashflow_df.loc[:, ['date', 'cumsum']],
+                      left_index=True, right_on='date', how='left').reset_index(drop=True).ffill()
     merged['return'] = merged['total'] / merged['cumsum']
 
     returns = merged.loc[:, ['date', 'return']]
@@ -387,27 +406,6 @@ def refresh_price_data(df):
     updatable_objects = Depot.objects.filter(price__exact=0)
 
     keys = list(updatable_objects.values('symbol', 'date'))
-
-    # Todo The following doesn't work yet.
-    # todo if keys only contains BITCOIN XBTE then download latest available depot data and use it for ffill
-    depot_df = pd.DataFrame(keys)
-
-    latest_date = depot_df.sort_values('date').iloc[0].values[1]
-
-    ffill_dates = daterange(latest_date + relativedelta(days=1), datetime.date.today() - relativedelta(days=1))
-
-    saved_depot = depot_df[depot_df.date == latest_date]
-
-    for date in ffill_dates:
-        depot_on_date = depot_df[depot_df.date == date]
-        if depot_on_date.empty:
-            depot_on_date = saved_depot.copy()
-            depot_on_date['date'] = date
-            depot_df.append(depot_on_date).reset_index(drop=True)
-        else:
-            saved_depot = depot_on_date.copy()
-
-    keys = depot_df.to_dict('records')
 
     for key in keys:
         # get price from database
