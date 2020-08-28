@@ -110,13 +110,13 @@ def portfolio_overview(request):
 
 def create_report(request):
     financial_data = get_yahoo_data(['DOCU'], start=datetime.date(2020, 1, 1), end=datetime.date(2020, 7, 11))
-    data = financial_data.to_frame().reset_index()
-    data.columns = ['date1', 'price1']
-    data.price1 = (data.price1.pct_change().fillna(0) + 1).cumprod()
+    # data = financial_data.to_frame().reset_index()
+    # data.columns = ['date1', 'price1']
+    # data.price1 = (data.price1.pct_change().fillna(0) + 1).cumprod()
 
-    timestamp = datetime.date.today()
+    # timestamp = datetime.date.today()
 
-    # data, timestamp = create_performance_time_series()
+    data, timestamp = create_performance_time_series()
 
     perf_series = data.price1
     perf_series.index = data.date1
