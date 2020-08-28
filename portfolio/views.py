@@ -246,8 +246,9 @@ def portfolio_request_report(request):
         form = RequestReportForm(request.POST)
         # check whether it's valid:
         if form.is_valid():
+            report_path = os.path.join(PDFS, 'report.pdf')
             send_report(receiver_mail=form.cleaned_data['email'],
-                        report_path="static/degiro/pdf/report.pdf")
+                        report_path=report_path)
 
             return HttpResponseRedirect('#')
 
