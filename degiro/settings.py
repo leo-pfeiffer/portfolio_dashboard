@@ -25,7 +25,7 @@ SECRET_KEY = 'alblg)!!b7er50q%oae)@d4nm8qm6bt#43moj(5hw46xk5iu)#'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '213.202.238.129']
 
 
 # Application definition
@@ -81,7 +81,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'degiro',
         'USER': 'degiro_admin',
-        'PASSWORD': '',
+        'PASSWORD': os.environ['DEGIRO_DB_PASSWORD'],
         'HOST': 'localhost',
         'PORT': '',
     }
