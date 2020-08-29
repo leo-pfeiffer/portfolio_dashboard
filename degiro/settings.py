@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 import datetime
 import os
+from degiro.mysecrets import secrets
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,12 +21,12 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'alblg)!!b7er50q%oae)@d4nm8qm6bt#43moj(5hw46xk5iu)#'
+SECRET_KEY = secrets['django_secret_key']
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '213.202.238.129']
+ALLOWED_HOSTS = ['localhost', '213.202.238.129', 'ljp-webservices.de']
 
 
 # Application definition
@@ -81,7 +82,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'degiro',
         'USER': 'degiro_admin',
-        'PASSWORD': os.environ['DEGIRO_DB_PASSWORD'],
+        'PASSWORD': secrets['django_db_pw'],
         'HOST': 'localhost',
         'PORT': '',
     }
@@ -124,7 +125,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.0/howto/static-files/
 
+if DEBUG:
+    STATICFILES_DIRS = [
+        os.path.join(BASE_DIR, 'static')
+    ]
+else:
+    STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static/')]
 IMAGES = os.path.join(BASE_DIR, 'static/degiro/images/')
 PDFS = os.path.join(BASE_DIR, 'static/degiro/pdf/')
