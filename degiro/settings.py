@@ -26,7 +26,7 @@ SECRET_KEY = secrets['django_secret_key']
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1:8000', '213.202.238.129', 'ljp-webservices.de']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '213.202.238.129', 'ljp-webservices.de']
 
 
 # Application definition
