@@ -15,7 +15,7 @@ django-widget-tweaks==1.4.8
 geckodriver-autoinstaller==0.1.0
 html5lib==1.1
 idna==2.10
-Jinja2==2.11.2
+Jinja2==2.11.3
 kiwisolver==1.2.0
 MarkupSafe==1.1.1
 matplotlib==3.3.0
