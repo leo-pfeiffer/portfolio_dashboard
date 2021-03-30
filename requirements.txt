@@ -9,7 +9,7 @@ chromedriver==2.24.1
 cssselect2==0.3.0
 cycler==0.10.0
 defusedxml==0.6.0
-Django==3.0.8
+Django==3.0.12
 django-tables2==2.3.1
 django-widget-tweaks==1.4.8
 geckodriver-autoinstaller==0.1.0
