@@ -3,8 +3,8 @@ import json
 import getpass
 from datetime import datetime, date
 from collections import defaultdict
-# from settings import paths # if used outside of django
-from .settings import paths  # if used with django
+
+from degiro.settings import DEGIRO
 
 
 class Degiro:
@@ -14,28 +14,14 @@ class Degiro:
         self.sess = None
         self.sessid = None
 
-    def login(self, conf_path=None, with2fa: bool = False):
-
-        if (conf_path is None) | (conf_path is False) | ((type(conf_path) is not bool) & (type(conf_path) is not str)):
-            conf = dict(username=input("Username: "), password=getpass.getpass())
-
-        elif (type(conf_path) is bool) & (conf_path is True):
-            conf_path = paths.SETTINGS + '/config.json'
-            conf = json.load(open(conf_path))
-
-        elif type(conf_path) is str:
-            try:
-                conf = json.load(open(conf_path))
-            except FileNotFoundError:
-                print("File not found. Please enter credentials manually.")
-                conf = dict(username=input("Username: "), password=getpass.getpass())
+    def login(self, with2fa: bool = False):
 
         self.sess = requests.Session()
 
         # Login
         url = 'https://trader.degiro.nl/login/secure/login'
-        payload = {'username': conf['username'],
-                   'password': conf['password'],
+        payload = {'username': DEGIRO['USERNAME'],
+                   'password': DEGIRO['PASSWORD'],
                    'isPassCodeReset': False,
                    'isRedirectToMobile': False}
         header = {'content-type': 'application/json'}

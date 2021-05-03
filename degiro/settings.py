@@ -11,7 +11,9 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 import datetime
 import os
-from degiro.mysecrets import secrets
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -21,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = secrets['django_secret_key']
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -80,11 +82,11 @@ DJANGO_TABLES2_TEMPLATE = "django_tables2/bootstrap.html"
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'degiro',
-        'USER': 'degiro_admin',
-        'PASSWORD': secrets['django_db_pw'],
-        'HOST': 'localhost',
-        'PORT': '',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASSWORD'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
     }
 }
 
@@ -135,3 +137,16 @@ else:
 STATIC_URL = '/static/'
 IMAGES = os.path.join(BASE_DIR, 'static/degiro/images/')
 PDFS = os.path.join(BASE_DIR, 'static/degiro/pdf/')
+
+# Mail credentials
+MAIL = {
+    'SMTP': os.getenv('MAIL_SMTP'),
+    'EMAIL': os.getenv('MAIL_EMAIL'),
+    'PASSWORD': os.getenv('MAIL_PASSWORD'),
+}
+
+# Degiro credentials
+DEGIRO = {
+    'USERNAME': os.getenv('DEGIRO_USERNAME'),
+    'PASSWORD': os.getenv('DEGIRO_PASSWORD')
+}

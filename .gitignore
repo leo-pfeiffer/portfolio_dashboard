@@ -1,6 +1,2 @@
-/degiro/portfolio/lib/api/settings/config.json
-/degiro/portfolio/lib/api/settings/paths.py
-/degiro/portfolio/lib/api/settings/mail.json
-/portfolio/lib/api/settings/config.json
-/portfolio/lib/api/settings/mail.json
-/degiro/mysecrets.py
+/degiro/.env
+.gitignore
