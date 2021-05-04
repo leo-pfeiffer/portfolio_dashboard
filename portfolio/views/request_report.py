@@ -1,5 +1,6 @@
 import os
 
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.views.generic import TemplateView
@@ -9,7 +10,7 @@ from portfolio.forms import RequestReportForm
 from portfolio.lib.helpers import send_report
 
 
-class RequestReport(TemplateView):
+class RequestReport(LoginRequiredMixin, TemplateView):
 
     template_name = 'portfolio/index.html'
 

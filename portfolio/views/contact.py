@@ -10,7 +10,7 @@ import datetime
 from portfolio.lib.helpers import send_email
 
 
-class ContactView(TemplateView):
+class ContactView(LoginRequiredMixin, TemplateView):
     template_name = 'portfolio/contact.html'
 
     def post(self, request, *args, **kwargs):

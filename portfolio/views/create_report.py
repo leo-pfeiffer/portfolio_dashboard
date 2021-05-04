@@ -3,6 +3,7 @@ import datetime
 import numpy as np
 from bokeh.plotting import figure, output_file
 from bokeh.io import export_png
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.template.loader import render_to_string
@@ -18,7 +19,7 @@ from portfolio.tables import PortfolioTable
 
 
 # todo this need some serious refactoring
-class CreateReport(TemplateView):
+class CreateReport(LoginRequiredMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         financial_data = get_yahoo_data(['DOCU'], start=datetime.date(2020, 1, 1), end=datetime.date(2020, 7, 11))

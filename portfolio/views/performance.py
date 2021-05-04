@@ -1,3 +1,4 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from django_tables2 import RequestConfig
@@ -6,7 +7,7 @@ from portfolio.lib.helpers import generate_overview, initiate_portfolio, create_
 from portfolio.tables import PortfolioTable
 
 
-class Performance(TemplateView):
+class Performance(LoginRequiredMixin, TemplateView):
     template_name = 'portfolio/performance.html'
 
     def get(self, request, *args, **kwargs):
