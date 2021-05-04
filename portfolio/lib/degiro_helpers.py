@@ -31,25 +31,6 @@ def generate_portfolio_data():
     return df
 
 
-def get_transactions(date: datetime.date):
-    """
-    Return transactions since date
-    """
-    D = DegiroAPI()
-    D.login(with2fa=False)
-    D.get_config()
-    date_as_string = date.strftime(format='%d/%m/%Y')
-    today = datetime.date.today().strftime(format="%d/%m/%Y")
-    transactions = D.get_transactions(fromDate=date_as_string, toDate=today)
-    for dic in transactions:
-        regexed_date = re.compile(r'\d{4}-\d{2}-\d{2}').findall(dic['date'])[0]
-        dic['date'] = datetime.datetime.strptime(regexed_date, '%Y-%m-%d').date()
-        dic['productId'] = str(dic['productId'])
-        dic['id'] = str(dic['id'])
-
-    return transactions
-
-
 def get_info_by_productId(product_ids: list):
     """Return list product info by productId. Input should be a list without dublicates!"""
     D = DegiroAPI()
@@ -70,8 +51,8 @@ def get_cashflows(start_dt: datetime.date):
     D = DegiroAPI()
     D.login(with2fa=False)
     D.get_config()
-    data = D.get_account_movements(fromDate=start_dt.strftime(format="%d/%m/%Y"),
-                                   toDate=datetime.date.today().strftime(format="%d/%m/%Y"))
+    data = D.get_account_movements(from_date=start_dt.strftime(format="%d/%m/%Y"),
+                                   to_date=datetime.date.today().strftime(format="%d/%m/%Y"))
 
     df = pd.DataFrame(data)
     df = df.loc[df.type == 'TRANSACTION'].sort_values("date")

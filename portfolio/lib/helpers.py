@@ -1,62 +1,20 @@
 import datetime
-import json
-import smtplib
+
 import pandas as pd
+from dateutil.relativedelta import relativedelta
 
-from email import encoders
-from email.mime.multipart import MIMEMultipart
-from email.mime.application import MIMEApplication
-from email.mime.text import MIMEText
-
-import ssl
-from project.settings import MAIL
+from .degiro_api import DegiroAPI
+from .mail import Mail
 from .performance_measures import returns, annualized_returns, std, sharpe, var, max_drawdown
+from .utils import date_range_gen
+from ..models import Depot, Transactions
 
 
-def daterange(start_date, end_date):
-    for n in range(int((end_date - start_date).days + 1)):
-        yield start_date + datetime.timedelta(n)
-
-
-def send_email(receiver_email: str, subject: str, body: str, filename=None):
-
-    smtp_server = MAIL['SMTP']
-    sender_email = MAIL['EMAIL']
-    password = MAIL['PASSWORD']
-
-    # Create a multipart message and set headers
-    message = MIMEMultipart()
-    message["From"] = sender_email
-    message["To"] = receiver_email
-    message["Subject"] = subject
-
-    # Add body to email
-    message.attach(MIMEText(body, "plain"))
-
-    if filename is not None:
-        with open(filename, "rb") as attachment:
-            part = MIMEApplication(attachment.read(), _subtype="pdf")
-
-        # Encode file in ASCII characters to send by email
-        encoders.encode_base64(part)
-
-        # Add header as key/value pair to attachment part
-        part.add_header(
-            "Content-Disposition",
-            f"attachment; filename= {filename}",
-        )
-
-        message.attach(part)
-
-    text = message.as_string()
-
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL(smtp_server, 465, context=context) as server:
-        server.login(sender_email, password)
-        server.sendmail(sender_email, receiver_email, text)
-
-
-def measure_loop(portfolio_df: pd.Series) -> dict:
+def measure_loop(performance: pd.Series) -> dict:
+    """
+    Loop through a range of performance measure calculations and return the result of all.
+    :param performance: Time series the calculations should be based on
+    """
     switcher = {
         1: returns,
         2: annualized_returns,
@@ -66,15 +24,12 @@ def measure_loop(portfolio_df: pd.Series) -> dict:
         6: max_drawdown,
     }
 
-    data = {}
+    data = dict()
     for key in switcher.keys():
         measure = switcher.get(key)
-        data = {**data, **measure(portfolio_df)}
+        data = {**data, **measure(performance)}
 
     return data
-
-# portfolio_df = get_portfolio().iloc[:, 8]
-# result = measure_loop(portfolio_df)
 
 
 # todo ==== all the following stuff definitely needs to be structured better
@@ -96,28 +51,6 @@ def refresh_depot_data():
     """
     Refresh depot data and update database.
     """
-
-    def get_last_portfolio():
-        try:
-            latest_date = Depot.objects.latest('date').date
-            return {'latest_date': latest_date,
-                    'latest_portfolio': [x for x in Depot.objects.values().filter(date=latest_date)]}
-        except ObjectDoesNotExist:
-            return {'latest_date': datetime.date(2020, 1, 1), 'latest_portfolio': []}
-
-    def exclude_existing_transactions(transactions):
-        """
-        exclude duplicated transactions (e.g. from same day)
-        """
-        existing_transactions = [x['id'] for x in list(Transactions.objects.all().values('id'))]
-
-        return [x for x in transactions if x['id'] not in existing_transactions]
-
-    def update_transactions(transactions):
-        """
-        Upload new transactions to db
-        """
-        Transactions.objects.bulk_create([Transactions(**vals) for vals in transactions])
 
     def fill_non_transaction_dates():
         """
@@ -218,16 +151,28 @@ def refresh_depot_data():
 
             print('Successful upload')
 
-    last_portfolio_all = get_last_portfolio()
-    last_portfolio = last_portfolio_all['latest_portfolio']
-    last_portfolio = [{k: v for k, v in d.items() if k in ['symbol', 'pieces']} for d in last_portfolio]
-    latest_date = last_portfolio_all['latest_date']
+    # Get the latest portfolio
+    last_portfolio = Depot.objects.get_latest_portfolio().values('symbol', 'pieces')
+    latest_date = Depot.objects.get_latest_date()
 
-    transactions = get_transactions(latest_date)
-    transactions = exclude_existing_transactions(transactions)
+    # Get all transactions since the latest portfolio
+    Degiro = DegiroAPI()
+    Degiro.login()
+    Degiro.get_config()
+    transactions = Degiro.get_transactions_clean(from_date=latest_date, to_date=datetime.date.today())
+
+    # todo inefficient
+    # exclude existing transactions
+    transactions = [x for x in transactions if x['id'] not in
+                    Transactions.objects.filter(id__in=transactions).values('id')]
+
     assemble_portfolio(last_portfolio, latest_date, transactions)
-    update_transactions(transactions)
+
+    # Upload new transactions
+    Transactions.objects.bulk_create([Transactions(**t) for t in transactions])
+
     fill_non_transaction_dates()
+
     # todo: try whether the following works
     update_price_database()
     # refresh_price_data() -> This should eventually be done in the database and not in pandas as is the case now
@@ -250,7 +195,7 @@ def create_performance_time_series():
 
     latest_date = portfolio_df.sort_values('date').iloc[-1].values[3]
     end_date = datetime.date.today() - relativedelta(days=1)
-    ffill_dates = [*daterange(latest_date + relativedelta(days=1), end_date)]
+    ffill_dates = [*date_range_gen(latest_date + relativedelta(days=1), end_date)]
 
     saved_depot = portfolio_df[portfolio_df.date == latest_date].loc[:,['id', 'symbol', 'pieces']]
 
@@ -364,7 +309,7 @@ def refresh_cashflows():
         cashflow_df['cumsum'] = cashflow_df.cashflow.cumsum()
         cashflow_df.iloc[0, 2] += last_cumsum
 
-        upload_df = pd.DataFrame(index=daterange(cashflow_df.iloc[0, 0], cashflow_df.iloc[-1, 0]))
+        upload_df = pd.DataFrame(index=date_range_gen(cashflow_df.iloc[0, 0], cashflow_df.iloc[-1, 0]))
         upload_df = upload_df.merge(cashflow_df, left_index=True, right_on='date', how="left").set_index("date").ffill()
         upload_df = upload_df.reset_index()
 
@@ -389,5 +334,5 @@ def send_report(report_path: str, **kwargs):
     subject = kwargs.get('subject', 'Your DegiroAPI Report')
     body = kwargs.get('body', 'Hello,\n\nPlease find attached your current DegiroAPI portfolio report.\n\nKind regards,'
                               '\nLeopold\n\n')
-    send_email(receiver_mail, subject, body, report_path)
+    Mail.send(receiver_mail, subject, body, report_path)
 

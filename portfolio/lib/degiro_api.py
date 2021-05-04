@@ -1,9 +1,10 @@
-from typing import Dict, List
+import re
+from typing import Dict, List, Union
 
 import requests
 import json
 import getpass
-from datetime import datetime, date
+import datetime
 from collections import defaultdict
 
 from project.settings import DEGIRO
@@ -194,17 +195,21 @@ class DegiroAPI:
 
         return portf_n
 
-    def get_account_movements(self, fromDate: str, toDate: str) -> List[Dict]:
+    def get_account_movements(self, from_date: Union[str, datetime.datetime, datetime.date],
+                              to_date: Union[str, datetime.datetime, datetime.date]) -> List[Dict]:
         """
         Get all account movements between fromDate and toDate.
-        :param fromDate: Date string of format dd/mm/yyyy todo: allow datetime
-        :param toDate: Date string of format dd/mm/yyyy todo: allow datetime
+        :param from_date: Date (string of format dd/mm/yyyy)
+        :param to_date: Date (string of format dd/mm/yyyy)
         :return: List of dictionaries containing todo
         """
+        from_date = self._get_date_string(from_date)
+        to_date = self._get_date_string(to_date)
+
         url = 'https://trader.degiro.nl/reporting/secure/v4/accountoverview'
         payload = {
-            'fromDate': fromDate,
-            'toDate': toDate,
+            'fromDate': from_date,
+            'toDate': to_date,
             'intAccount': self.user['intAccount'],
             'sessionId': self.sess_id
         }
@@ -220,7 +225,7 @@ class DegiroAPI:
             mov = dict()
             # Reformat timezone part: +01:00 -> +0100
             date = ''.join(rmov['date'].rsplit(':', 1))
-            date = datetime.strptime(date, '%Y-%m-%dT%H:%M:%S%z')
+            date = datetime.datetime.strptime(date, '%Y-%m-%dT%H:%M:%S%z')
             mov['date'] = date
             if 'change' in rmov:
                 mov['change'] = rmov['change']
@@ -234,16 +239,19 @@ class DegiroAPI:
             movs.append(mov)
         return movs
 
-    def get_transactions(self, fromDate: str, toDate: str) -> List[Dict]:
+    def get_transactions(self, from_date: Union[str, datetime.datetime, datetime.date],
+                         to_date: Union[str, datetime.datetime, datetime.date]) -> List[Dict]:
         """
         Get historical transactions between fromDate and toDate.
-        :param fromDate: Date string of format dd/mm/yyyy todo: allow datetime
-        :param toDate: Date string of format dd/mm/yyyy todo: allow datetime
-        :return: List of dictionaries containing todo
+        :param from_date: Date (string of format dd/mm/yyyy)
+        :param to_date: Date (string of format dd/mm/yyyy)
+        :return: List of dictionaries containing
         """
+        from_date = self._get_date_string(from_date)
+        to_date = self._get_date_string(to_date)
         url = 'https://trader.degiro.nl/reporting/secure/v4/transactions'
-        payload = {'fromDate': fromDate,
-                   'toDate': toDate,
+        payload = {'fromDate': from_date,
+                   'toDate': to_date,
                    'intAccount': self.user['intAccount'],
                    'sessionId': self.sess_id}
 
@@ -254,7 +262,24 @@ class DegiroAPI:
         data = r.json()['data']
         return data
 
-    # Returns product info 
+    def get_transactions_clean(self, from_date: Union[str, datetime.datetime, datetime.date],
+                               to_date: Union[str, datetime.datetime, datetime.date]):
+
+        """
+        Wrapper around self.get_transactions that cleans the data before returning it
+        """
+
+        transactions = self.get_transactions(from_date, to_date)
+
+        for dic in transactions:
+            regexed_date = re.compile(r'\d{4}-\d{2}-\d{2}').findall(dic['date'])[0]
+            dic['date'] = datetime.datetime.strptime(regexed_date, '%Y-%m-%d').date()
+            dic['productId'] = str(dic['productId'])
+            dic['id'] = str(dic['id'])
+
+        return transactions
+
+    # Returns product info
     #  ids is a list of product ID (from DegiroAPI)
     def get_product_by_id(self, ids: List[str]) -> Dict:
         """
@@ -276,6 +301,17 @@ class DegiroAPI:
         except KeyError:
             print('\tKeyError: No data retrieved.')
             return r.json()
+
+    @staticmethod
+    def _get_date_string(date):
+        if isinstance(date, datetime.date) or isinstance(date, datetime.datetime):
+            return date.strftime(format="%d/%m/%Y")
+        elif isinstance(date, str):
+            try:
+                datetime.datetime.strptime(date, '%d/%m/%Y')
+                return date
+            except ValueError as ve:
+                raise ve
 
 
 if __name__ == '__main__':

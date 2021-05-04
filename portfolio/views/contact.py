@@ -1,13 +1,13 @@
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.views.generic import TemplateView
 
+from portfolio.lib.mail import Mail
 from project.settings import MAIL
 from portfolio.forms import ContactForm
 
 import datetime
-
-from portfolio.lib.helpers import send_email
 
 
 class ContactView(LoginRequiredMixin, TemplateView):
@@ -31,7 +31,7 @@ class ContactView(LoginRequiredMixin, TemplateView):
                    f'\n\n--------------------\n\n' \
                    f'{content}'
 
-            send_email(receiver_email=receiver_email, subject=subject, body=body)
+            Mail.send(receiver_email=receiver_email, subject=subject, body=body)
 
             return HttpResponseRedirect('#')
 

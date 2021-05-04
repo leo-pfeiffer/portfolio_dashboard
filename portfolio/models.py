@@ -1,11 +1,15 @@
 from django.db import models
 
+from portfolio.managers import DepotManager
+
 
 class Depot(models.Model):
     symbol = models.CharField(max_length=32)
     pieces = models.FloatField()
     date = models.DateField()
     price = models.FloatField(default=0)
+
+    objects = DepotManager()
 
 
 class Assets(models.Model):
