@@ -1,5 +1,7 @@
-from degiro import DegiroAPI
 import pandas as pd
+
+from portfolio.lib.degiro_api import DegiroAPI
+
 la = DegiroAPI()
 la.login(with2fa=False, conf_path=True)
 la.get_config()

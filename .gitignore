@@ -1,2 +1,2 @@
-/degiro/.env
 .gitignore
+/project/.env

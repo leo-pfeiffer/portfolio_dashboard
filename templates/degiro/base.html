@@ -67,7 +67,7 @@
       <a href="/portfolio" class="logo">Degiro</a>
       <div class="header-right">
         <a class="active" href="/portfolio">Startseite</a>
-        <a href="/portfolio/contact">Kontakt</a>
+        <a href="/contact">Kontakt</a>
       </div>
     </div>
     </body>
@@ -93,21 +93,21 @@
 							<a href="/portfolio"><span class="fa fa-home mr-3"></span> Startseite</a>
 						</li>
 						<li>
-							<a href="/portfolio/portfolio-overview"><span class="fa fa-user mr-3"></span> Portfolio</a>
+							<a href="/overview"><span class="fa fa-user mr-3"></span> Portfolio</a>
 						</li>
 						<li>
-							<a href="/portfolio/portfolio-allocation"><span class="fa fa-briefcase mr-3"></span> Allokation</a>
+							<a href="/allocation"><span class="fa fa-briefcase mr-3"></span> Allokation</a>
 						</li>
 						<li>
-							<a href="/portfolio/portfolio-performance"><span class="fa fa-sticky-note mr-3"></span> Wertentwicklung</a>
+							<a href="/performance"><span class="fa fa-sticky-note mr-3"></span> Wertentwicklung</a>
 						</li>
 						<li>
-                            <a href="/portfolio/portfolio-create-report"><span class="fa fa-sticky-note mr-3"></span> Report erstellen</a>
+                            <a href="/create-report"><span class="fa fa-sticky-note mr-3"></span> Report erstellen</a>
 						</li>
 					</ul>
 				<div class="mb-5">
 					<h3 class="h6 mb-3">Report anfordern</h3>
-					<form action="/portfolio/request-report/" method="post" class="subscribe-form">
+					<form action="/request-report/" method="post" class="subscribe-form">
 						<div class="form-group d-flex">
                             {% csrf_token %}
 							<input id="email" name="email" type="text" class="form-control" placeholder="E-Mail Adresse">

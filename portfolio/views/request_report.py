@@ -4,7 +4,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.views.generic import TemplateView
 
-from degiro.settings import PDFS
+from project.settings import PDFS
 from portfolio.forms import RequestReportForm
 from portfolio.lib.helpers import send_report
 

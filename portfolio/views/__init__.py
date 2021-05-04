@@ -6,3 +6,4 @@ from .create_report import *
 from .performance import *
 from .depot import *
 from .request_report import *
+from .account import *

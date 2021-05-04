@@ -9,7 +9,7 @@ from email.mime.application import MIMEApplication
 from email.mime.text import MIMEText
 
 import ssl
-from degiro.settings import MAIL
+from project.settings import MAIL
 from .performance_measures import returns, annualized_returns, std, sharpe, var, max_drawdown
 
 

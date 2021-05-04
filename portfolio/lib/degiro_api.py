@@ -6,7 +6,7 @@ import getpass
 from datetime import datetime, date
 from collections import defaultdict
 
-from degiro.settings import DEGIRO
+from project.settings import DEGIRO
 
 
 class DegiroAPI:

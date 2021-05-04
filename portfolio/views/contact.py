@@ -2,7 +2,7 @@ from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.views.generic import TemplateView
 
-from degiro.settings import MAIL
+from project.settings import MAIL
 from portfolio.forms import ContactForm
 
 import datetime

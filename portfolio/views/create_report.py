@@ -10,7 +10,7 @@ from django.views.generic import TemplateView
 from django_tables2 import RequestConfig
 from weasyprint import HTML
 
-from degiro.settings import IMAGES, PDFS, MAIL
+from project.settings import IMAGES, PDFS, MAIL
 
 from portfolio.lib.helpers import generate_overview, create_performance_time_series, measure_loop
 from portfolio.lib.yahoodata import get_yahoo_data
