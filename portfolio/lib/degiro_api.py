@@ -48,6 +48,22 @@ class DegiroAPI:
         self.sess_id = self.sess_id.split(';')[0]
         self.sess_id = self.sess_id.split('=')[1]
 
+    def logout(self) -> None:
+        """
+        Logout the user from the degiro account.
+        """
+
+        url = 'https://trader.degiro.nl/trading/secure/logout'
+        url += ';jsessionid=' + self.sess_id
+
+        r = self.sess.get(url)
+
+        # Reset
+        if r.status_code == 200:
+            self.data = None
+            self.sess = None
+            self.sess_id = None
+
     # This contain loads of user data, main interest here is the 'intAccount' -> also contains personal data
     def get_config(self) -> int:
         """
@@ -77,10 +93,16 @@ class DegiroAPI:
 
         return r.status_code
 
-    # This gets a lot of data, orders, news, portfolio, cash funds etc.
     def get_data(self) -> int:
         """
-        Get lots of data (orders, news, portfolio, cash funds etc).
+        Fetches several data points from the API. In particular, it retrieves:
+        - orders
+        - historicalOrders
+        - transactions
+        - portfolio
+        - totalPortfolio
+        - alerts
+        - cashFunds
         :returns: HTTP status code
         """
         if len(self.user) == 0:
@@ -341,7 +363,7 @@ class DegiroAPI:
             print('\tKeyError: No data retrieved.')
             return r.json()
 
-    def get_products_by_id(self, product_ids) -> List[Dict]:
+    def get_products_by_id(self, product_ids) -> Dict:
         """
         Wrapper around self.get_product_by_id that allows batch requests.
         :param product_ids: Unique list of product_ids
@@ -350,10 +372,10 @@ class DegiroAPI:
 
         chunks = [product_ids[i * 10:(i + 1) * 10] for i in range((len(product_ids) + 9) // 10)]
 
-        data_out = []
+        data_out = {}
 
         for chunk in chunks:
-            data_out.append(self.get_product_by_id(chunk))
+            data_out = {**data_out, **self.get_product_by_id(chunk)}
 
         return data_out
 

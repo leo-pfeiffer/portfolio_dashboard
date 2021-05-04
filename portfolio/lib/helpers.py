@@ -163,7 +163,6 @@ def refresh_depot_data():
     Degiro.get_config()
     transactions = Degiro.get_transactions_clean(from_date=latest_date, to_date=datetime.date.today())
 
-    # todo inefficient
     # exclude existing transactions
     transactions = [x for x in transactions if x['id'] not in
                     Transactions.objects.filter(id__in=transactions).values('id')]
