@@ -3,11 +3,13 @@ import datetime
 import pandas as pd
 from dateutil.relativedelta import relativedelta
 
-from .degiro_api import DegiroAPI
-from .mail import Mail
-from .performance_measures import returns, annualized_returns, std, sharpe, var, max_drawdown
-from .utils import date_range_gen
-from ..models import Depot, Transactions
+from portfolio.lib.degiro_api import DegiroAPI
+from portfolio.lib.mail import Mail
+from portfolio.lib.performance_measures import returns, annualized_returns, std, sharpe, var, max_drawdown
+from portfolio.lib.utils import date_range_gen
+from portfolio.models import Depot, Transactions
+
+from portfolio.lib.yf_api import YF
 
 
 def measure_loop(performance: pd.Series) -> dict:
@@ -108,7 +110,7 @@ def refresh_depot_data():
             daily_sells_red = {}
 
             if len(daily_buys) > 0:
-                daily_buys_info = get_info_by_productId(list(set([x['productId'] for x in daily_buys])))
+                daily_buys_info = D.get_products_by_id(list(set([x['productId'] for x in daily_buys])))
                 # todo: take out the following: Bad error handling
                 if list(daily_buys_info[0].keys())[0] == 'errors':
                     continue
@@ -127,7 +129,7 @@ def refresh_depot_data():
                 daily_buys_red = {x['symbol']: x['quantity'] for x in daily_buys_red}
 
             if len(daily_sells) > 0:
-                daily_sells_info = get_info_by_productId([x['productId'] for x in daily_sells])
+                daily_sells_info = D.get_products_by_id([x['productId'] for x in daily_sells])
                 # todo: take out the following: Bad error handling
                 if list(daily_sells_info[0].keys())[0] == 'errors':
                     continue
@@ -268,13 +270,13 @@ def update_price_database():
         end_date = datetime.date.today()
 
     if update_necessary:
-        yahoo_df = get_yahoo_data(non_existing_symbols, start=start_date, end=end_date)
+        yahoo_df = YF.get_yahoo_data(non_existing_symbols, start=start_date, end=end_date)
 
         if yahoo_df.empty:
             print('Yahoo Finance didn\'t return anything.')
             return None
 
-        ffilled_df = ffill_yahoo_data(yahoo_df).reset_index()
+        ffilled_df = YF.ffill_yahoo_data(yahoo_df).reset_index()
 
         df_out = pd.melt(ffilled_df, id_vars='index')
         df_out.columns = ['date', 'symbol', 'price']
@@ -301,7 +303,7 @@ def refresh_cashflows():
 
     # handle no new data is available
     try:
-        cashflow_df = get_cashflows(last_date + relativedelta(days=1))
+        cashflow_df = D.get_cash_flows(last_date + relativedelta(days=1))
     except KeyError:
         return None
 

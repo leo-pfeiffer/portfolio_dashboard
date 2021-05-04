@@ -1,6 +1,8 @@
 import re
 from typing import Dict, List, Union
 
+import numpy as np
+import pandas as pd
 import requests
 import json
 import getpass
@@ -195,6 +197,27 @@ class DegiroAPI:
 
         return portf_n
 
+    def get_portfolio_df(self):
+        """
+        Build a portfolio data frame
+        # todo should not be in API
+        """
+        total = self.get_portfolio_summary()['equity']
+        portfolio = self.get_portfolio()
+
+        symbols = [x['symbol'] for x in portfolio['PRODUCT'].values()]
+        name = [x['name'] for x in portfolio['PRODUCT'].values()]
+        size = [int(x['size']) for x in portfolio['PRODUCT'].values()]
+        price = [np.round(x['price'], 2) for x in portfolio['PRODUCT'].values()]
+        subtot = [np.round(x['size'] * x['price'], 2) for x in portfolio['PRODUCT'].values()]
+        alloc = [np.round(x / total, 4) for x in subtot]
+
+        df = pd.DataFrame([name, size, price, subtot, alloc]).T
+        df.index = symbols
+        df.columns = ['Name', 'Size', 'Price', 'Subtotal', 'Allocation']
+
+        return df
+
     def get_account_movements(self, from_date: Union[str, datetime.datetime, datetime.date],
                               to_date: Union[str, datetime.datetime, datetime.date]) -> List[Dict]:
         """
@@ -239,6 +262,24 @@ class DegiroAPI:
             movs.append(mov)
         return movs
 
+    def get_cash_flows(self, from_date: datetime.date):
+        """
+        Wrapper around self.get_account_movements that returns only cash flows.
+        Todo this should not be in the API
+        :param from_date: Start date of the cash flows
+        """
+        movements = self.get_account_movements(from_date, datetime.date.today())
+
+        df = pd.DataFrame(movements)
+        df = df.loc[df.type == 'TRANSACTION'].sort_values("date")
+        df.date = df.date.apply(lambda x: x.date)
+        df = df[['date', 'change']].groupby('date').sum()
+        df = df.reset_index()
+        df.change = -df.change
+        df.columns = ['date', 'cashflow']
+
+        return df
+
     def get_transactions(self, from_date: Union[str, datetime.datetime, datetime.date],
                          to_date: Union[str, datetime.datetime, datetime.date]) -> List[Dict]:
         """
@@ -279,8 +320,6 @@ class DegiroAPI:
 
         return transactions
 
-    # Returns product info
-    #  ids is a list of product ID (from DegiroAPI)
     def get_product_by_id(self, ids: List[str]) -> Dict:
         """
         Returns product info for all product Ids provided in the list.
@@ -301,6 +340,22 @@ class DegiroAPI:
         except KeyError:
             print('\tKeyError: No data retrieved.')
             return r.json()
+
+    def get_products_by_id(self, product_ids) -> List[Dict]:
+        """
+        Wrapper around self.get_product_by_id that allows batch requests.
+        :param product_ids: Unique list of product_ids
+        :returns: Product info
+        """
+
+        chunks = [product_ids[i * 10:(i + 1) * 10] for i in range((len(product_ids) + 9) // 10)]
+
+        data_out = []
+
+        for chunk in chunks:
+            data_out.append(self.get_product_by_id(chunk))
+
+        return data_out
 
     @staticmethod
     def _get_date_string(date):

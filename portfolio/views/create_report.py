@@ -14,7 +14,7 @@ from weasyprint import HTML
 from project.settings import IMAGES, PDFS, MAIL
 
 from portfolio.lib.helpers import generate_overview, create_performance_time_series, measure_loop
-from portfolio.lib.yahoodata import get_yahoo_data
+from portfolio.lib.yf_api import YF
 from portfolio.tables import PortfolioTable
 
 
@@ -22,7 +22,7 @@ from portfolio.tables import PortfolioTable
 class CreateReport(LoginRequiredMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
-        financial_data = get_yahoo_data(['DOCU'], start=datetime.date(2020, 1, 1), end=datetime.date(2020, 7, 11))
+        financial_data = YF.get_yahoo_data(['DOCU'], start=datetime.date(2020, 1, 1), end=datetime.date(2020, 7, 11))
         # data = financial_data.to_frame().reset_index()
         # data.columns = ['date1', 'price1']
         # data.price1 = (data.price1.pct_change().fillna(0) + 1).cumprod()
