@@ -145,7 +145,7 @@ MAIL = {
     'PASSWORD': os.getenv('MAIL_PASSWORD'),
 }
 
-# Degiro credentials
+# DegiroAPI credentials
 DEGIRO = {
     'USERNAME': os.getenv('DEGIRO_USERNAME'),
     'PASSWORD': os.getenv('DEGIRO_PASSWORD')

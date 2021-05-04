@@ -1,3 +1,5 @@
+from typing import Dict, List
+
 import requests
 import json
 import getpass
@@ -7,23 +9,29 @@ from collections import defaultdict
 from degiro.settings import DEGIRO
 
 
-class Degiro:
+class DegiroAPI:
     def __init__(self):
         self.user = dict()
         self.data = None
         self.sess = None
-        self.sessid = None
+        self.sess_id = None
 
-    def login(self, with2fa: bool = False):
+    def login(self, with2fa: bool = False) -> None:
+        """
+        Login to the Degiro account.
+        :param with2fa: Set to true, if 2FA is necessary for login.
+        """
 
         self.sess = requests.Session()
 
         # Login
         url = 'https://trader.degiro.nl/login/secure/login'
-        payload = {'username': DEGIRO['USERNAME'],
-                   'password': DEGIRO['PASSWORD'],
-                   'isPassCodeReset': False,
-                   'isRedirectToMobile': False}
+        payload = {
+            'username': DEGIRO['USERNAME'],
+            'password': DEGIRO['PASSWORD'],
+            'isPassCodeReset': False,
+            'isRedirectToMobile': False
+        }
         header = {'content-type': 'application/json'}
 
         if with2fa:
@@ -33,18 +41,22 @@ class Degiro:
         r = self.sess.post(url, headers=header, data=json.dumps(payload))
 
         # Get session id
-        self.sessid = r.headers['Set-Cookie']
-        self.sessid = self.sessid.split(';')[0]
-        self.sessid = self.sessid.split('=')[1]
+        self.sess_id = r.headers['Set-Cookie']
+        self.sess_id = self.sess_id.split(';')[0]
+        self.sess_id = self.sess_id.split('=')[1]
 
     # This contain loads of user data, main interest here is the 'intAccount' -> also contains personal data
-    def getConfig(self):
+    def get_config(self) -> int:
+        """
+        Get configuration data about the user. Some of this data is required for other methods.
+        :return: HTTP Request Status code
+        """
         url = 'https://trader.degiro.nl/pa/secure/client'
-        payload = {'sessionId': self.sessid}
+        payload = {'sessionId': self.sess_id}
 
         r = self.sess.get(url, params=payload)
-        print('Get config')
-        print('\tStatus code: {}'.format(r.status_code))
+        if r.status_code != 200:
+            return r.status_code
 
         data = r.json()
         self.user['intAccount'] = data['data']['intAccount']
@@ -60,34 +72,48 @@ class Degiro:
         self.user['bic'] = data['data']['bankAccount']['bic']
         self.user['iban'] = data['data']['bankAccount']['iban']
 
+        return r.status_code
+
     # This gets a lot of data, orders, news, portfolio, cash funds etc.
-    def getData(self):
+    def get_data(self) -> int:
+        """
+        Get lots of data (orders, news, portfolio, cash funds etc).
+        :returns: HTTP status code
+        """
         if len(self.user) == 0:
-            self.getConfig()
+            self.get_config()
         url = 'https://trader.degiro.nl/trading/secure/v5/update/'
         url += str(self.user['intAccount']) + ';'
-        url += 'jsessionid=' + self.sessid
-        payload = {'portfolio': 0,
-                   'totalPortfolio': 0,
-                   'orders': 0,
-                   'historicalOrders': 0,
-                   'transactions': 0,
-                   'alerts': 0,
-                   'cashFunds': 0,
-                   'intAccount': self.user['intAccount'],
-                   'sessionId': self.sessid}
+        url += 'jsessionid=' + self.sess_id
+        payload = {
+            'portfolio': 0,
+            'totalPortfolio': 0,
+            'orders': 0,
+            'historicalOrders': 0,
+            'transactions': 0,
+            'alerts': 0,
+            'cashFunds': 0,
+            'intAccount': self.user['intAccount'],
+            'sessionId': self.sess_id
+        }
 
         r = self.sess.get(url, params=payload)
-        print('Get data')
-        print('\tStatus code: {}'.format(r.status_code))
 
-        self.data = r.json()
+        if r.status_code == 200:
+            self.data = r.json()
 
-    # Get the cash funds
-    def getCashFunds(self):
+        return r.status_code
+
+    def get_cash_funds(self) -> Dict:
+        """
+        Extract the cash funds from self.data.
+        :returns: Dict containing the cash funds in different currencies.
+        """
         if self.data is None:
-            self.getData()
-        cashFunds = dict()
+            self.get_data()
+
+        cash_funds = dict()
+
         for cf in self.data['cashFunds']['value']:
             entry = dict()
             for y in cf['value']:
@@ -96,26 +122,35 @@ class Degiro:
                     key = y['value']
                     continue
                 entry[y['name']] = y['value']
-            cashFunds[key] = entry
-        return cashFunds
+            cash_funds[key] = entry
 
-    # Only returns a summary of the portfolio
-    def getPortfolioSummary(self):
-        pf = self.getPortfolio()
-        cf = self.getCashFunds()
+        return cash_funds
+
+    def get_portfolio_summary(self) -> Dict:
+        """
+        Returns a summary of the portfolio.
+        :returns: Portfolio summary
+        """
+        # todo this maybe shouldn't be in the API
+        pf = self.get_portfolio()
+        cf = self.get_cash_funds()
         tot = 0
         for eq in pf['PRODUCT'].values():
             tot += eq['value']
 
-        pfSummary = dict()
-        pfSummary['equity'] = tot
-        pfSummary['cash'] = cf['EUR']['value']
-        return pfSummary
+        pf_summary = dict()
+        pf_summary['equity'] = tot
+        pf_summary['cash'] = cf['EUR']['value']
+        return pf_summary
 
-    # Returns the entire portfolio
-    def getPortfolio(self):
+    def get_portfolio(self) -> Dict:
+        """
+        Extracts portfolio from self.data and enriches it with additional information from Degiro
+        :returns: Portfolio data
+        """
         if self.data is None:
-            self.getData()
+            self.get_data()
+
         portfolio = []
         for row in self.data['portfolio']['value']:
             entry = dict()
@@ -141,34 +176,43 @@ class Degiro:
 
         # Adding extra data
         url = 'https://trader.degiro.nl/product_search/secure/v5/products/info'
-        params = {'intAccount': str(self.user['intAccount']),
-                  'sessionId': self.sessid}
+        params = {
+            'intAccount': str(self.user['intAccount']),
+            'sessionId': self.sess_id
+        }
         header = {'content-type': 'application/json'}
         pid_list = list(portf_n['PRODUCT'].keys())
         r = self.sess.post(url, headers=header, params=params, data=json.dumps(pid_list))
-        print('\tGetting extra data')
-        print('\t\tStatus code: {}'.format(r.status_code))
 
-        for k, v in r.json()['data'].items():
-            del (v['id'])
-            # Some bonds tend to have a non-unit size
-            portf_n['PRODUCT'][k]['size'] *= v['contractSize']
-            portf_n['PRODUCT'][k].update(v)
+        if r.status_code == 200:
+
+            for k, v in r.json()['data'].items():
+                del (v['id'])
+                # Some bonds tend to have a non-unit size
+                portf_n['PRODUCT'][k]['size'] *= v['contractSize']
+                portf_n['PRODUCT'][k].update(v)
 
         return portf_n
 
-    # Returns all account transactions
-    #  fromDate and toDate are strings in the format: dd/mm/yyyy
-    def getAccountOverview(self, fromDate, toDate):
+    def get_account_movements(self, fromDate: str, toDate: str) -> List[Dict]:
+        """
+        Get all account movements between fromDate and toDate.
+        :param fromDate: Date string of format dd/mm/yyyy todo: allow datetime
+        :param toDate: Date string of format dd/mm/yyyy todo: allow datetime
+        :return: List of dictionaries containing todo
+        """
         url = 'https://trader.degiro.nl/reporting/secure/v4/accountoverview'
-        payload = {'fromDate': fromDate,
-                   'toDate': toDate,
-                   'intAccount': self.user['intAccount'],
-                   'sessionId': self.sessid}
+        payload = {
+            'fromDate': fromDate,
+            'toDate': toDate,
+            'intAccount': self.user['intAccount'],
+            'sessionId': self.sess_id
+        }
 
         r = self.sess.get(url, params=payload)
-        print('Get account overview')
-        print('\tStatus code: {}'.format(r.status_code))
+
+        if r.status_code != 200:
+            return list()
 
         data = r.json()
         movs = []
@@ -190,33 +234,41 @@ class Degiro:
             movs.append(mov)
         return movs
 
-    # Returns historical transactions
-    #  fromDate and toDate are strings in the format: dd/mm/yyyy
-    def getTransactions(self, fromDate, toDate):
-        """Can only get chunks of size 13 ?"""
+    def get_transactions(self, fromDate: str, toDate: str) -> List[Dict]:
+        """
+        Get historical transactions between fromDate and toDate.
+        :param fromDate: Date string of format dd/mm/yyyy todo: allow datetime
+        :param toDate: Date string of format dd/mm/yyyy todo: allow datetime
+        :return: List of dictionaries containing todo
+        """
         url = 'https://trader.degiro.nl/reporting/secure/v4/transactions'
         payload = {'fromDate': fromDate,
                    'toDate': toDate,
                    'intAccount': self.user['intAccount'],
-                   'sessionId': self.sessid}
+                   'sessionId': self.sess_id}
 
         r = self.sess.get(url, params=payload)
-        print('Get Transactions overview')
-        print('\tStatus code: {}'.format(r.status_code))
+        if r.status_code != 200:
+            return list()
 
         data = r.json()['data']
         return data
 
     # Returns product info 
-    #  ids is a list of product ID (from Degiro)
-    def getProductByIds(self, ids):
+    #  ids is a list of product ID (from DegiroAPI)
+    def get_product_by_id(self, ids: List[str]) -> Dict:
+        """
+        Returns product info for all product Ids provided in the list.
+        :param ids: List of product IDs
+        :returns: Product info
+        """
         url = "https://trader.degiro.nl/product_search/secure/v5/products/info"
         header = {'content-type': 'application/json'}
-        params = {'intAccount': str(self.user['intAccount']), 'sessionId': self.sessid}
+        params = {'intAccount': str(self.user['intAccount']), 'sessionId': self.sess_id}
         r = self.sess.post(url, headers=header, params=params, data=json.dumps([str(id) for id in ids]))
 
-        print(f'Get Products info for {ids}')
-        print('\tStatus code: {}'.format(r.status_code))
+        if r.status_code != 200:
+            return dict()
 
         try:
             data = r.json()['data']
@@ -227,28 +279,11 @@ class Degiro:
 
 
 if __name__ == '__main__':
-    deg = Degiro()
-    deg.login(conf_path=True, with2fa=False)
+    deg = DegiroAPI()
+    deg.login(with2fa=False)
 
-    # create portfolio dataframe:
-    # df = pd.DataFrame(dict['PRODUCT'])
-    # df.columns = df.loc['isin',:].values
-
-    # deg.getConfig()
-    # data = deg.getTransactions(fromDate=date(2020, 6, 1).strftime(format="%d/%m/%Y"),
-    #                            toDate=date.today().strftime(format="%d/%m/%Y"))
-    # symbols = [x['productId'] for x in data]
-    # symbols_chunks = [symbols[i * 10:(i+1) * 10] for i in range((len(symbols) + 9) // 10)]
-    #
-    # product_ids = []
-    # for chunk in symbols_chunks:
-    #     dict_out = deg.getProductByIds(chunk)
-    #     product_ids.append([x['symbol'] for x in dict_out])
-    #
-    # product = deg.getProductByIds(symbols)
-    deg.getConfig()
+    deg.get_config()
     for i in ['15885941', '14616228', '14616228', '15885941', '15964254']:
-        print(i)
-        deg.getProductByIds(i)
+        deg.get_product_by_id([i])
 
     int(0)

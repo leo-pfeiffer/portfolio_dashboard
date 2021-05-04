@@ -3,6 +3,8 @@ import pandas as pd
 import datetime
 from dateutil.relativedelta import relativedelta
 
+# todo maybe find sth more reliable... and also check that all this even makes sense
+
 
 def get_yahoo_data(tickers: list, start: datetime.date, end: datetime.date):
     start = start.strftime(format="%Y-%m-%d")

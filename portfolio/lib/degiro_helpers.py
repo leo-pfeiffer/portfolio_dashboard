@@ -3,14 +3,18 @@ import re
 import pandas as pd
 import numpy as np
 import datetime
-from .api.degiro import Degiro
 
+from portfolio.lib.degiro_api import DegiroAPI
+
+
+# Todo all of these functions seem pretty crummy. Maybe structure them in a Wrapper class around the Degiro API ?
+#  also just make sure they actually make any sense
 
 def generate_portfolio_data():
-    D = Degiro()
-    D.login(with2fa=False, conf_path=True)
-    pfs = D.getPortfolioSummary()
-    portfolio = D.getPortfolio()
+    D = DegiroAPI()
+    D.login(with2fa=False)
+    pfs = D.get_portfolio_summary()
+    portfolio = D.get_portfolio()
     total = pfs['equity']
 
     symbols = [x['symbol'] for x in portfolio['PRODUCT'].values()]
@@ -31,12 +35,12 @@ def get_transactions(date: datetime.date):
     """
     Return transactions since date
     """
-    D = Degiro()
-    D.login(with2fa=False, conf_path=True)
-    D.getConfig()
+    D = DegiroAPI()
+    D.login(with2fa=False)
+    D.get_config()
     date_as_string = date.strftime(format='%d/%m/%Y')
     today = datetime.date.today().strftime(format="%d/%m/%Y")
-    transactions = D.getTransactions(fromDate=date_as_string, toDate=today)
+    transactions = D.get_transactions(fromDate=date_as_string, toDate=today)
     for dic in transactions:
         regexed_date = re.compile(r'\d{4}-\d{2}-\d{2}').findall(dic['date'])[0]
         dic['date'] = datetime.datetime.strptime(regexed_date, '%Y-%m-%d').date()
@@ -48,26 +52,26 @@ def get_transactions(date: datetime.date):
 
 def get_info_by_productId(product_ids: list):
     """Return list product info by productId. Input should be a list without dublicates!"""
-    D = Degiro()
-    D.login(with2fa=False, conf_path=True)
-    D.getConfig()
+    D = DegiroAPI()
+    D.login(with2fa=False)
+    D.get_config()
 
     chunks = [product_ids[i * 10:(i + 1) * 10] for i in range((len(product_ids) + 9) // 10)]
 
     data_out = []
 
     for chunk in chunks:
-        data_out.append(D.getProductByIds(chunk))
+        data_out.append(D.get_product_by_id(chunk))
 
     return data_out
 
 
 def get_cashflows(start_dt: datetime.date):
-    D = Degiro()
-    D.login(with2fa=False, conf_path=True)
-    D.getConfig()
-    data = D.getAccountOverview(fromDate=start_dt.strftime(format="%d/%m/%Y"),
-                                toDate=datetime.date.today().strftime(format="%d/%m/%Y"))
+    D = DegiroAPI()
+    D.login(with2fa=False)
+    D.get_config()
+    data = D.get_account_movements(fromDate=start_dt.strftime(format="%d/%m/%Y"),
+                                   toDate=datetime.date.today().strftime(format="%d/%m/%Y"))
 
     df = pd.DataFrame(data)
     df = df.loc[df.type == 'TRANSACTION'].sort_values("date")

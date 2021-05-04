@@ -1,10 +1,10 @@
-from degiro import Degiro
+from degiro import DegiroAPI
 import pandas as pd
-la = Degiro()
+la = DegiroAPI()
 la.login(with2fa=False, conf_path=True)
-la.getConfig()
-pfs = la.getPortfolioSummary()
-portfolio = la.getPortfolio()
+la.get_config()
+pfs = la.get_portfolio_summary()
+portfolio = la.get_portfolio()
 total = pfs['equity']
 
 # Prints a pretty table of your equities and their allocation.

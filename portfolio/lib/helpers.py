@@ -386,8 +386,8 @@ def daily_depot_prices() -> pd.DataFrame:
 
 def send_report(report_path: str, **kwargs):
     receiver_mail = kwargs.get('receiver_mail', 'leopold.pfeiffer@gmx.de')
-    subject = kwargs.get('subject', 'Your Degiro Report')
-    body = kwargs.get('body', 'Hello,\n\nPlease find attached your current Degiro portfolio report.\n\nKind regards,'
+    subject = kwargs.get('subject', 'Your DegiroAPI Report')
+    body = kwargs.get('body', 'Hello,\n\nPlease find attached your current DegiroAPI portfolio report.\n\nKind regards,'
                               '\nLeopold\n\n')
     send_email(receiver_mail, subject, body, report_path)
 
