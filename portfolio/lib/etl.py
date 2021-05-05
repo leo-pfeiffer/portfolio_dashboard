@@ -9,7 +9,8 @@ import datetime
 
 from portfolio.lib.degiro_api import DegiroAPI
 from portfolio.lib.yf_api import YF
-from portfolio.models import Depot, Transactions, Assets, Prices
+from portfolio.models import Depot, Transactions, Assets, Prices, DimensionSymbolDate
+from django.db.models import F
 
 
 class Extraction:
@@ -78,7 +79,8 @@ class Extraction:
 
         # symbols included in last portfolio
         portfolio_symbols = list(Depot.objects.get_portfolio_at_date(self._from_date).filter(
-            ~Q(symbol__in=transaction_symbols)).distinct('symbol').values_list('symbol', flat=True))
+            ~Q(symbol_date__symbol__in=transaction_symbols)
+        ).distinct('symbol_date__symbol').values_list('symbol_date__symbol', flat=True))
 
         # all symbols for which to get price data
         symbols = [*portfolio_symbols, *transaction_symbols]
@@ -118,6 +120,7 @@ class Transformation:
         self._product_info = {}
         self._price_data = {}
         self._portfolios = []
+        self._symbol_date_combs = []
 
     @property
     def data(self):
@@ -126,7 +129,8 @@ class Transformation:
             'transactions': self._transactions,
             'product_info': self._product_info,
             'price_data': self._price_data,
-            'portfolios': self._portfolios
+            'portfolios': self._portfolios,
+            'symbol_date_combs': self._symbol_date_combs
         }
 
     def _transform_transactions(self):
@@ -192,7 +196,10 @@ class Transformation:
         from_date = self._extracted['from_date']
         date_iterator = from_date
 
-        latest_portfolio = Depot.objects.get_portfolio_at_date(from_date).values('symbol', 'pieces')
+        latest_portfolio = Depot.objects.get_portfolio_at_date(from_date)\
+            .annotate(symbol=F('symbol_date__symbol'))\
+            .values('symbol', 'pieces')
+
         portfolio_at_date = {x['symbol']: x['pieces'] for x in latest_portfolio}
 
         same_day_start = date_iterator == datetime.date.today()
@@ -218,7 +225,10 @@ class Transformation:
 
                 # works for both buys and sells as for sells the quantity is negative
                 if symbol in daily_qtys.keys():
-                    daily_qtys[symbol] += quantity
+
+                    # if no quantities left, don't include symbol
+                    if -daily_qtys[symbol] != quantity:
+                        daily_qtys[symbol] += quantity
 
                 else:
                     daily_qtys[symbol] = quantity
@@ -232,7 +242,9 @@ class Transformation:
             date_iterator += relativedelta(days=1)
 
         # todo this can be made nicer
-        # unnest portfolios
+        # unnest portfolios and compile symbol date combinations
+        symbol_date_combs = []
+
         unnested_portfolios: List[Dict[str, Any]] = []
         for portfolio in portfolios:
             for symbol in portfolio['portfolio'].keys():
@@ -242,7 +254,27 @@ class Transformation:
                     'pieces': portfolio['portfolio'][symbol]
                 })
 
+                # store the current symbol-date combination
+                symbol_date_combs.append((symbol, portfolio['date']))
+
         self._portfolios = unnested_portfolios
+        self._symbol_date_combs = list({*self._symbol_date_combs, *symbol_date_combs})
+
+    def _transform_symbol_date_combs(self):
+        """
+        Transform the newly created symbol-date combinations.
+        """
+        print('_transform_symbol_date_combs')
+
+        # dates only
+        dates = [x[1] for x in self._symbol_date_combs]
+
+        # get combinations already in the table
+        existing = DimensionSymbolDate.objects.filter(date__in=dates).values_list('symbol', 'date')
+
+        # filter new combinations and format
+        self._symbol_date_combs = [{'symbol': comb[0], 'date': comb[1]} for comb in self._symbol_date_combs
+                                   if comb not in existing]
 
     def _transform_price_data(self):
         """
@@ -259,9 +291,15 @@ class Transformation:
         # convert into long format
         molten = pd.melt(price_data, id_vars='index')
         molten.columns = ['date', 'symbol', 'price']
+        molten.dropna(subset=['price'], inplace=True)
 
         # store price data in record format
         self._price_data = molten.to_dict('records')
+
+        # add the symbol date combinations of the price data
+        combs = [tuple(x) for x in molten.loc[:, ['symbol', 'date']].to_dict('split')['data']]
+
+        self._symbol_date_combs = list({*self._symbol_date_combs, *combs})
 
     def run(self):
         """
@@ -271,6 +309,7 @@ class Transformation:
         self._transform_product_info()
         self._build_portfolio()
         self._transform_price_data()
+        self._transform_symbol_date_combs()
 
 
 class Loading:
@@ -286,6 +325,7 @@ class Loading:
             assert 'product_info' in transformation_data.keys()
             assert 'price_data' in transformation_data.keys()
             assert 'portfolios' in transformation_data.keys()
+            assert 'symbol_date_combs' in transformation_data.keys()
         except AssertionError as ae:
             print('Invalid transformation_data received.')
             raise ae
@@ -308,12 +348,46 @@ class Loading:
         asset_objects = [Assets(**info[1]) for info in self._transformation_data['product_info'].items()]
         Assets.objects.bulk_create(asset_objects)
 
+    def _load_symbol_date_combs(self):
+        """
+        Load the symbol-date-combinations into the DimensionSymbolDate table.
+        """
+        print('_load_symbol_date_combs')
+        symbol_date_objects = [DimensionSymbolDate(**comb) for comb in self._transformation_data['symbol_date_combs']]
+        DimensionSymbolDate.objects.bulk_create(symbol_date_objects)
+
+    @staticmethod
+    def _symbol_date_prep(data, retained_column):
+        """
+        Add the appropriate symbol_date ID to the provided data in order to make upload to Depot and Prices model
+        possible (due to FK to DimensionSymbolDate).
+        :param data: the data set to add the id to (should be in record form)
+        :param retained_column: the other column to retain in the data set in addition to symbol_date_id
+        """
+
+        dates = [x['date'] for x in data]
+        symbols = list(set([x['symbol'] for x in data]))
+
+        existing = pd.DataFrame(DimensionSymbolDate.objects.get_existing(dates, symbols),
+                                columns=['symbol_date', 'symbol', 'date'])
+
+        data_df = pd.DataFrame(data)
+
+        merged = pd.merge(data_df, existing, how='left')[[retained_column, 'symbol_date']]
+        merged.columns = [retained_column, 'symbol_date_id']
+        records = merged.to_dict('records')
+
+        return records
+
     def _load_price_data(self):
         """
         Load the price data into the Prices table.
         """
         print('_load_price_data')
-        price_objects = [Prices(**p) for p in self._transformation_data['price_data']]
+
+        records = self._symbol_date_prep(self._transformation_data['price_data'], 'price')
+
+        price_objects = [Prices(**p) for p in records]
         Prices.objects.bulk_create(price_objects)
 
     def _load_portfolios(self):
@@ -321,7 +395,10 @@ class Loading:
         Load the portfolios into the Depot table.
         """
         print('_load_portfolios')
-        depot_objects = [Depot(**d) for d in self._transformation_data['portfolios']]
+
+        records = self._symbol_date_prep(self._transformation_data['portfolios'], 'pieces')
+
+        depot_objects = [Depot(**d) for d in records]
         Depot.objects.bulk_create(depot_objects)
 
     def run(self):
@@ -330,5 +407,6 @@ class Loading:
         """
         self._load_transactions()
         self._load_product_info()
+        self._load_symbol_date_combs()
         self._load_price_data()
         self._load_portfolios()
