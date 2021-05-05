@@ -42,5 +42,5 @@ typing-extensions==3.7.4.2
 urllib3==1.25.10
 WeasyPrint==51
 webencodings==0.5.1
-yfinance==0.1.54
+yfinance==0.1.59
 python-dotenv~=0.17.1

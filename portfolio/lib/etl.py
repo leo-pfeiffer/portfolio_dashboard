@@ -3,10 +3,12 @@
 # the database.
 from typing import Dict
 
+from django.db.models import Q
 from pandas.tseries.offsets import BDay
 import datetime
 
 from portfolio.lib.degiro_api import DegiroAPI
+from portfolio.lib.yf_api import YF
 from portfolio.models import Depot, Transactions
 
 
@@ -16,7 +18,7 @@ class Extraction:
         self._degiro = DegiroAPI()
         self._transactions = list()
         self._product_info = dict()
-        self._price_date = list()
+        self._prices= list()
 
         from_date = Depot.objects.get_latest_date() - BDay(1)
         self._from_date = from_date if from_date else datetime.datetime(2020, 1, 1).date()
@@ -24,14 +26,17 @@ class Extraction:
     @property
     def data(self) -> Dict:
         # make sure we actually have all the data extracted
-        assert len(self._transactions) > 0
-        assert len(self._product_info) > 0
-        assert len(self._price_date) > 0
+        try:
+            assert len(self._transactions) > 0
+            assert len(self._product_info) > 0
+            assert len(self._prices) > 0
+        except AssertionError:
+            print('Run ETL.run() first before retrieving data.')
 
         return {
             'transactions': self._transactions,
             'product_info': self._product_info,
-            'price_data': self._price_date
+            'price_data': self._prices
         }
 
     def _config(self):
@@ -40,6 +45,12 @@ class Extraction:
         """
         self._degiro.login()
         self._degiro.get_config()
+
+    def _exit(self):
+        """
+        Logout of the Degiro account.
+        """
+        self._degiro.logout()
 
     def _extract_transactions(self):
         to_date = datetime.date.today()
@@ -61,8 +72,19 @@ class Extraction:
 
     def _extract_price_data(self):
         """
-        Extract the price data for the time frame of the new transactions
+        Extract the price data for the time frame of the new transactions.
         """
+        # symbols included in new transactions
+        transaction_symbols = list(set([x['symbol'] for x in self._product_info.values()]))
+
+        # symbols included in last portfolio
+        portfolio_symbols = list(Depot.objects.get_portfolio_at_date(self._from_date).filter(
+            ~Q(symbol__in=transaction_symbols)).distinct('symbol').values_list('symbol', flat=True))
+
+        # all symbols for which to get price data
+        symbols = [*portfolio_symbols, *transaction_symbols]
+
+        self._prices = YF.get_prices(symbols, start=self._from_date, end=datetime.date.today())
 
     def run(self):
         """
@@ -72,16 +94,28 @@ class Extraction:
         self._extract_transactions()
         self._extract_product_info()
         self._extract_price_data()
+        self._exit()
 
 
 class Transformation:
+
+    def __init__(self, extraction_data):
+        self.extraction_data = extraction_data
+
+    @property
+    def data(self):
+        return {}
+
     # Transform the raw data into the required format
     def run(self):
         pass
 
 
 class Loading:
+
+    def __init__(self, transformation_data):
+        self.transformation_data = transformation_data
+
     # Load transformed data into database
     def run(self):
         pass
-

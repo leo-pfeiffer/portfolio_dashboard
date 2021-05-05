@@ -13,6 +13,15 @@ class DepotManager(models.Manager):
 
         return self.filter(date=self.latest('date').date)
 
+    def get_portfolio_at_date(self, date: datetime.date):
+        """
+        Return the portfolio on a given date.
+        """
+        if not self.exists():
+            return self.none()
+
+        return self.filter(date=date)
+
     def get_latest_date(self):
         """
         Return the date of the latest portfolio.

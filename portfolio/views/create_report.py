@@ -22,7 +22,7 @@ from portfolio.tables import PortfolioTable
 class CreateReport(LoginRequiredMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
-        financial_data = YF.get_yahoo_data(['DOCU'], start=datetime.date(2020, 1, 1), end=datetime.date(2020, 7, 11))
+        financial_data = YF.get_prices(['DOCU'], start=datetime.date(2020, 1, 1), end=datetime.date(2020, 7, 11))
         # data = financial_data.to_frame().reset_index()
         # data.columns = ['date1', 'price1']
         # data.price1 = (data.price1.pct_change().fillna(0) + 1).cumprod()

@@ -22,8 +22,8 @@ class YF:
                 raise ve
 
     @staticmethod
-    def get_yahoo_data(tickers: list, start: Union[str, datetime.datetime, datetime.date],
-                       end: Union[str, datetime.datetime, datetime.date]) -> pd.DatetimeIndex:
+    def get_prices(tickers: list, start: Union[str, datetime.datetime, datetime.date],
+                   end: Union[str, datetime.datetime, datetime.date]) -> pd.DatetimeIndex:
         """
         Get prices for a list of tickers in a time range.
         :param tickers: tickers to get
@@ -35,7 +35,7 @@ class YF:
         end = YF._get_date_string(end)
 
         tickers = [t.lower() for t in tickers]
-        prices = yf.download(tickers=tickers, start=start, end=end).loc[:, 'Adj Close']
+        prices = yf.download(tickers=tickers, start=start, end=end, progress=False).loc[:, 'Adj Close']
         prices.index = [x.date() for x in prices.index.to_list()]
 
         return prices
@@ -58,5 +58,5 @@ class YF:
 
 
 if __name__ == '__main__':
-    YF.get_yahoo_data(['msft', 'amzn', 'tsla'], start="2020-01-10", end="2020-01-25")
+    YF.get_prices(['msft', 'amzn', 'tsla'], start="2020-01-10", end="2020-01-25")
     int(0)

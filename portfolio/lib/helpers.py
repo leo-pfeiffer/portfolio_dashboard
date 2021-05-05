@@ -269,7 +269,7 @@ def update_price_database():
         end_date = datetime.date.today()
 
     if update_necessary:
-        yahoo_df = YF.get_yahoo_data(non_existing_symbols, start=start_date, end=end_date)
+        yahoo_df = YF.get_prices(non_existing_symbols, start=start_date, end=end_date)
 
         if yahoo_df.empty:
             print('Yahoo Finance didn\'t return anything.')
