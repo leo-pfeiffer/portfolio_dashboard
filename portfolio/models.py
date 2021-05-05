@@ -2,6 +2,8 @@ from django.db import models
 
 from portfolio.managers import DepotManager
 
+# todo add descriptions and verbose names
+
 
 class Depot(models.Model):
     symbol = models.CharField(max_length=100)

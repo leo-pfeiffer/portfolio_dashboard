@@ -1,6 +1,3 @@
-# Start an ETL process that gets the data from the external sources and puts it into the database.
-# This should be the only place we poll the API directly. The application should get all its data from
-# the database.
 import re
 from collections import Counter
 from typing import Dict, List, Any
@@ -50,6 +47,9 @@ class Extraction:
         self._degiro.logout()
 
     def _extract_transactions(self):
+        """
+        Extract the transactions from the degiro API.
+        """
         print('_extract_transactions')
         to_date = datetime.date.today()
         transactions = self._degiro.get_transactions(self._from_date, to_date)
@@ -104,18 +104,23 @@ class Transformation:
             dictionary with keys 'transactions', 'product_info', 'price_data', 'from_date'.
         """
 
-        self._extracted = extraction_data
+        try:
+            assert 'transactions' in extraction_data.keys()
+            assert 'product_info' in extraction_data.keys()
+            assert 'price_data' in extraction_data.keys()
+            assert 'from_date' in extraction_data.keys()
+        except AssertionError as ae:
+            print('Invalid extraction_data received.')
+            raise ae
 
+        self._extracted = extraction_data
         self._transactions = []
         self._product_info = {}
         self._price_data = {}
-
-        # [{date: xxx, portfolio: {symbol1: qty1, symbol2: qty2, ...}}, ...]
         self._portfolios = []
 
     @property
     def data(self):
-        # make sure we actually have all the data transformed
 
         return {
             'transactions': self._transactions,
@@ -249,7 +254,7 @@ class Transformation:
         price_data = self._extracted['price_data']
 
         # forward fill non-business days etc.
-        price_data = YF.ffill_yahoo_data(price_data).reset_index()
+        price_data = YF.ffill_price_data(price_data).reset_index()
 
         # convert into long format
         molten = pd.melt(price_data, id_vars='index')
@@ -319,8 +324,10 @@ class Loading:
         depot_objects = [Depot(**d) for d in self._transformation_data['portfolios']]
         Depot.objects.bulk_create(depot_objects)
 
-    # Load transformed data into database
     def run(self):
+        """
+        Run the loading process.
+        """
         self._load_transactions()
         self._load_product_info()
         self._load_price_data()

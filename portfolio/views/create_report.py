@@ -13,9 +13,11 @@ from weasyprint import HTML
 
 from project.settings import IMAGES, PDFS, MAIL
 
-from portfolio.lib.helpers import generate_overview, create_performance_time_series, measure_loop
+from portfolio.lib.helpers import generate_overview, create_performance_time_series
 from portfolio.lib.yf_api import YF
 from portfolio.tables import PortfolioTable
+
+from portfolio.lib.performance_measures import PerformanceMeasures
 
 
 # todo this need some serious refactoring
@@ -34,7 +36,7 @@ class CreateReport(LoginRequiredMixin, TemplateView):
         perf_series = data.price1
         perf_series.index = data.date1
 
-        measure_data = measure_loop(perf_series)
+        measure_data = PerformanceMeasures.measure_loop(perf_series)
 
         for key, value in measure_data.items():
             if key == 'sharpe':

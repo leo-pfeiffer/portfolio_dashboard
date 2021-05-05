@@ -1,4 +1,3 @@
-import re
 from typing import Dict, List, Union
 
 import numpy as np
@@ -324,24 +323,6 @@ class DegiroAPI:
 
         data = r.json()['data']
         return data
-
-    def get_transactions_clean(self, from_date: Union[str, datetime.datetime, datetime.date],
-                               to_date: Union[str, datetime.datetime, datetime.date]):
-
-        """
-        Wrapper around self.get_transactions that cleans the data before returning it
-        TODO obsolete
-        """
-
-        transactions = self.get_transactions(from_date, to_date)
-
-        for dic in transactions:
-            regexed_date = re.compile(r'\d{4}-\d{2}-\d{2}').findall(dic['date'])[0]
-            dic['date'] = datetime.datetime.strptime(regexed_date, '%Y-%m-%d').date()
-            dic['productId'] = str(dic['productId'])
-            dic['id'] = str(dic['id'])
-
-        return transactions
 
     def get_product_by_id(self, ids: List[str]) -> Dict:
         """

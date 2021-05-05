@@ -5,13 +5,15 @@ import pandas as pd
 import datetime
 from dateutil.relativedelta import relativedelta
 
-# todo check that all this makes sense
-
 
 class YF:
 
     @staticmethod
-    def _get_date_string(date):
+    def _get_date_string(date: Union[str, datetime.datetime, datetime.date]):
+        """
+        Helper method that creates an appropriately formatted date string for the yfinance API.
+        :param date: Date to format
+        """
         if isinstance(date, datetime.date) or isinstance(date, datetime.datetime):
             return date.strftime(format="%Y-%m-%d")
         elif isinstance(date, str):
@@ -45,13 +47,10 @@ class YF:
         return prices
 
     @staticmethod
-    def last_data_at_date(tickers: list, date: datetime.datetime.date):
-        date = YF._get_date_string(date)
-        # todo: either write all data for all stocks to database or get time window and forward fill
-        pass
-
-    @staticmethod
-    def ffill_yahoo_data(df: pd.DataFrame) -> pd.DataFrame:
+    def ffill_price_data(df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Forward fill price data to deal with non business days and other gaps.
+        """
         start = df.index[0]
         end = df.index[-1]
 

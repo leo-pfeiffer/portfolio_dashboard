@@ -7,7 +7,7 @@ from django.views.generic import TemplateView
 
 from project.settings import PDFS
 from portfolio.forms import RequestReportForm
-from portfolio.lib.helpers import send_report
+from portfolio.lib.report import send_report
 
 
 class RequestReport(LoginRequiredMixin, TemplateView):
