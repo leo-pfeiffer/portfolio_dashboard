@@ -110,22 +110,31 @@ def refresh_depot_data():
             daily_sells_red = {}
 
             if len(daily_buys) > 0:
+
+                # {productID1: {...}, productID2: {...}, ...}
                 daily_buys_info = D.get_products_by_id(list(set([x['productId'] for x in daily_buys])))
+
                 # todo: take out the following: Bad error handling
                 if list(daily_buys_info[0].keys())[0] == 'errors':
                     continue
 
+                # [{productID1: symbol1}, {productID2: symbol2}, ...]
                 daily_buys_symbol = [{k: v['symbol']} for k, v in
                                      zip(daily_buys_info[0].keys(), daily_buys_info[0].values())]
 
+                # {productID: symbol1, productID2: symbol2, ...}
                 daily_buys_symbol = {k: v for d in daily_buys_symbol for k, v in d.items()}
 
+                # [{id: 1, ...}, {id: 2...}] -> transactions but only those with keys productID and quantity
+                # unnecessary
                 daily_buys_red = [{k: v for k, v in x.items() if k in ['productId', 'quantity']} for x in daily_buys]
 
+                # [{id: 1, symbol: abc}, {id: 2, symbol: def}, ...]
                 for x in daily_buys_red:
                     x.update({'symbol': daily_buys_symbol[x['productId']]})
                     del x['productId']
 
+                # {symbol1: q1, symbol2: q2, ...}
                 daily_buys_red = {x['symbol']: x['quantity'] for x in daily_buys_red}
 
             if len(daily_sells) > 0:
@@ -147,6 +156,7 @@ def refresh_depot_data():
 
                 daily_sells_red = {x['symbol']: x['quantity'] for x in daily_sells_red}
 
+            # {symbol1: q1, symbol2: q2, ...}
             portfolio_at_date = dict(Counter(portfolio_at_date) + Counter(daily_buys_red) + Counter(daily_sells_red))
 
             upload_new_transactions(date=date_iterator, portfolio_at_date=portfolio_at_date)
@@ -250,8 +260,14 @@ def refresh_price_data(df):
 
 def update_price_database():
     # todo: test whether this works when we *update* instead of gather entirely new data
+
+    # Existing symbols in depot
     depot_symbols = [x['symbol'] for x in list(Depot.objects.all().values('symbol').distinct())]
+
+    # Existing symbols in price database
     existing_symbols = [x['symbol'] for x in list(Prices.objects.all().values('symbol').distinct())]
+
+    # Symbols that aren't in price database yet but required
     non_existing_symbols = [x for x in depot_symbols if x not in existing_symbols]
 
     update_necessary = False

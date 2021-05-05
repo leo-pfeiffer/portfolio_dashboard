@@ -4,17 +4,16 @@ from portfolio.managers import DepotManager
 
 
 class Depot(models.Model):
-    symbol = models.CharField(max_length=32)
+    symbol = models.CharField(max_length=100)
     pieces = models.FloatField()
     date = models.DateField()
-    price = models.FloatField(default=0)
 
     objects = DepotManager()
 
 
 class Assets(models.Model):
-    isin = models.CharField(max_length=32)
-    symbol = models.CharField(max_length=10)
+    isin = models.CharField(max_length=12)
+    symbol = models.CharField(max_length=100)
     name = models.TextField()
     type = models.CharField(max_length=32)
     currency = models.CharField(max_length=3)
@@ -22,7 +21,7 @@ class Assets(models.Model):
 
 
 class Prices(models.Model):
-    symbol = models.CharField(max_length=32)
+    symbol = models.CharField(max_length=100)
     date = models.DateField()
     price = models.FloatField(default=0)
 
@@ -41,15 +40,6 @@ class Transactions(models.Model):
     price = models.FloatField(default=None, blank=True, null=True)
     quantity = models.FloatField(default=None, blank=True, null=True)
     total = models.FloatField(default=None, blank=True, null=True)
-    orderTypeId = models.IntegerField(default=None, blank=True, null=True)
-    counterParty = models.CharField(max_length=64, default=None, blank=True, null=True)
-    transfered = models.BooleanField(default=None, blank=True, null=True)
-    fxRate = models.FloatField(default=None, blank=True, null=True)
-    totalInBaseCurrency = models.FloatField(default=None, blank=True, null=True)
-    feeInBaseCurrency = models.FloatField(default=None, blank=True, null=True)
-    totalPlusFeeInBaseCurrency = models.FloatField(default=None, blank=True, null=True)
-    transactionTypeId = models.IntegerField(default=None, blank=True, null=True)
-
 
 class Cashflows(models.Model):
     date = models.DateField(unique=True)

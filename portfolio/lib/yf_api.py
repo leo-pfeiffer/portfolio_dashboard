@@ -38,6 +38,10 @@ class YF:
         prices = yf.download(tickers=tickers, start=start, end=end, progress=False).loc[:, 'Adj Close']
         prices.index = [x.date() for x in prices.index.to_list()]
 
+        # Handle format when only one ticker is fetched
+        if len(tickers) == 1:
+            prices.name = tickers[0].upper()
+
         return prices
 
     @staticmethod

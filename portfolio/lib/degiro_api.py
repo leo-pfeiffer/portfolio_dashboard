@@ -330,6 +330,7 @@ class DegiroAPI:
 
         """
         Wrapper around self.get_transactions that cleans the data before returning it
+        TODO obsolete
         """
 
         transactions = self.get_transactions(from_date, to_date)
