@@ -1,19 +1,17 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.views.generic import TemplateView
-from django_tables2 import RequestConfig
 
-from portfolio.tables import PortfolioTable
+from portfolio.lib.aggregation import create_portfolio
 
 
 class Overview(LoginRequiredMixin, TemplateView):
-    template_name = 'portfolio/allocation.html'
+    template_name = 'portfolio/overview.html'
 
     def get(self, request, *args, **kwargs):
-        df = generate_overview()
-        out = PortfolioTable(df)
-        RequestConfig(request).configure(out)
+        portfolio = create_portfolio()
+        portfolio = portfolio.to_dict('records')
 
         return render(request, self.template_name, {
-            'table': out
+            'portfolio': portfolio
         })

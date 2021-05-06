@@ -1,8 +1,11 @@
 # Aggregate loaded data
 import pandas as pd
+from pandas.tseries.offsets import BDay
+from django.db.models import F
+import datetime
 
 from portfolio.lib.utils import date_range_gen
-from portfolio.models import Cashflow, Depot
+from portfolio.models import Cashflow, Depot, Asset
 
 
 def create_cumulative_cashflow() -> pd.Series:
@@ -68,3 +71,32 @@ def create_performance_series() -> pd.Series:
     performance['return'] = performance['total'] / performance['cashflow']
 
     return performance['return']
+
+
+def create_portfolio() -> pd.DataFrame:
+    """
+    Create data frame of current allocation.
+    """
+    previous_business_day = (datetime.date.today() - BDay(1)).date()
+    portfolio = list(Depot.objects.get_portfolio_at_date(previous_business_day)\
+        .annotate(
+            symbol=F('symbol_date__symbol'),
+            price=F('symbol_date__price__price'),
+            size=F('pieces'),
+            subtotal=F('pieces') * F('symbol_date__price__price'),
+        ).values('symbol', 'size', 'price', 'subtotal'))
+
+    portfolio_frame = pd.DataFrame(portfolio)
+
+    total_value = portfolio_frame.subtotal.sum()
+
+    portfolio_frame['allocation'] = portfolio_frame['subtotal'] / total_value
+
+    # add product information
+    product_info = list(Asset.objects.filter(symbol__in=portfolio_frame.symbol.values)
+                        .values('isin', 'name', 'symbol').distinct())
+
+    portfolio_frame = pd.merge(portfolio_frame, pd.DataFrame(product_info), on='symbol', how='left').round(2)
+
+    return portfolio_frame
+

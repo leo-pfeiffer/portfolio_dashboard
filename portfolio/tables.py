@@ -6,6 +6,7 @@ class PortfolioTable(tables.Table):
     row_number = tables.Column(verbose_name="Row", empty_values=())
     Symbol = tables.Column(verbose_name="Symbol")
     Name = tables.Column(verbose_name="Name")
+    ISIN = tables.Column(verbose_name="ISIN")
     Size = tables.Column(verbose_name="Size", order_by="size")
     Price = tables.Column(verbose_name="Price", order_by="price")
     Subtotal = tables.Column(verbose_name="Subtotal", order_by="subtotal")

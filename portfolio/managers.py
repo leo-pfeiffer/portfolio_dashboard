@@ -14,7 +14,7 @@ class DepotManager(models.Manager):
         if not self.exists():
             return self.none()
 
-        return self.filter(date=self.latest('symbol_date__date').date)
+        return self.filter(symbol_date__date=self.latest('symbol_date__date').symbol_date.date)
 
     def get_portfolio_at_date(self, date: datetime.date) -> QuerySet:
         """
@@ -23,7 +23,7 @@ class DepotManager(models.Manager):
         if not self.exists():
             return self.none()
 
-        return self.filter(symbol_date__date=date)
+        return self.filter(symbol_date__date=date).distinct().order_by('symbol_date__symbol')
 
     def get_latest_date(self) -> Union[datetime.date, None]:
         """
