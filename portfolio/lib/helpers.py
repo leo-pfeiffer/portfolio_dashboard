@@ -2,23 +2,13 @@ import datetime
 
 import pandas as pd
 from dateutil.relativedelta import relativedelta
+from django.db.models import F
 
 from portfolio.lib.utils import date_range_gen
 from portfolio.models import Depot
 
 
 # todo ==== all the following stuff definitely needs to be structured better
-
-def initiate_portfolio():
-    df = daily_depot_prices()
-    refresh_price_data(df)
-    refresh_cashflows()
-
-
-def generate_overview():
-    df = generate_portfolio_data().reset_index().rename(columns={'index': 'Symbol'}).to_dict('records')
-    return df
-
 
 def create_performance_time_series():
     """Create a dataframe containing the returns time series up to timestamp"""
@@ -39,7 +29,7 @@ def create_performance_time_series():
     end_date = datetime.date.today() - relativedelta(days=1)
     ffill_dates = [*date_range_gen(latest_date + relativedelta(days=1), end_date)]
 
-    saved_depot = portfolio_df[portfolio_df.date == latest_date].loc[:,['id', 'symbol', 'pieces']]
+    saved_depot = portfolio_df[portfolio_df.date == latest_date].loc[:, ['id', 'symbol', 'pieces']]
 
     prices = Prices.objects.filter(date__in=[*ffill_dates]).all()
     prices_df = pd.DataFrame(list(prices.values()))
@@ -66,27 +56,6 @@ def create_performance_time_series():
     timestamp = returns.date1.iloc[-1]
 
     return returns, timestamp
-
-
-def refresh_price_data(df):
-    """
-    Add daily price info to the depot table
-    """
-    updatable_objects = Depot.objects.filter(price__exact=0)
-
-    keys = list(updatable_objects.values('symbol', 'date'))
-
-    for key in keys:
-        # get price from database
-        try:
-            price = Prices.objects.get(**key).price
-        except ObjectDoesNotExist:
-            price = 0
-
-        # update price in depot
-        position = Depot.objects.get(**key)
-        position.price = price
-        position.save()
 
 
 def refresh_cashflows():
@@ -116,16 +85,4 @@ def refresh_cashflows():
 
         Cashflows.objects.bulk_create([Cashflows(**vals) for vals in upload_df.to_dict('records')])
 
-
-def daily_depot_prices() -> pd.DataFrame:
-    """
-    Return a df with daily depot and respective prices
-    """
-    df_depot = pd.DataFrame(list(Depot.objects.all().values())).loc[:, ['symbol', 'pieces', 'date']]
-    start_date = df_depot['date'].min()
-    df_prices = pd.DataFrame(list(Prices.objects.filter(date__gte=start_date).values())).loc[:,
-                ['symbol', 'date', 'price']]
-    df = pd.merge(df_depot, df_prices, left_on=['date', 'symbol'], right_on=['date', 'symbol'], how='inner')
-
-    return df
 
