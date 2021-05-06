@@ -12,6 +12,11 @@ from portfolio.lib.yf_api import YF
 from portfolio.models import Depot, Transaction, Asset, Price, DimensionSymbolDate, Cashflow
 from django.db.models import F
 
+import logging
+from project.logger import log
+
+logger = logging.getLogger('db')
+
 
 class Extraction:
 
@@ -36,6 +41,7 @@ class Extraction:
             'from_date': self._from_date
         }
 
+    @log()
     def _config(self):
         """
         Configure the DegiroAPI (login and get config).
@@ -43,17 +49,18 @@ class Extraction:
         self._degiro.login()
         self._degiro.get_config()
 
+    @log()
     def _exit(self):
         """
         Logout of the Degiro account.
         """
         self._degiro.logout()
 
+    @log()
     def _extract_transactions(self):
         """
         Extract the transactions from the degiro API.
         """
-        print('_extract_transactions')
         to_date = datetime.date.today()
         transactions = self._degiro.get_transactions(self._from_date, to_date)
 
@@ -61,30 +68,34 @@ class Extraction:
         self._transactions = [x for x in transactions if x['id'] not in
                               Transaction.objects.filter(id__in=transactions).values('id')]
 
+        logger.info(__name__ + 'successful')
+
+    @log()
     def _extract_product_info(self):
         """"
         Extract the product info for all products included in the new transactions.
         """
-        # Make sure _extract_transactions is called first
-        print('_extract_product_info')
 
         product_ids = list(set([str(x['productId']) for x in self._transactions]))
         self._product_info = self._degiro.get_products_by_id(product_ids)
 
+        logger.info(__name__ + 'successful')
+
+    @log()
     def _extract_cash_flows(self):
         """
         Extract cash flows.
         """
-        print('_extract_cash_flows')
-
         self._cash_flows = self._degiro.get_account_movements(self._from_date, datetime.date.today())
 
+        logger.info(__name__ + 'successful')
+
+    @log()
     def _extract_price_data(self):
         """
         Extract the price data for the time frame of the new transactions.
         """
         # symbols included in new transactions
-        print('_extract_product_info')
         transaction_symbols = list(set([x['symbol'] for x in self._product_info.values()]))
 
         # symbols included in last portfolio
@@ -96,6 +107,8 @@ class Extraction:
         symbols = [*portfolio_symbols, *transaction_symbols]
 
         self._prices = YF.get_prices(symbols, start=self._from_date, end=datetime.date.today())
+
+        logger.info(__name__ + 'successful')
 
     def run(self):
         """
@@ -124,7 +137,7 @@ class Transformation:
             assert 'from_date' in extraction_data.keys()
             assert 'cash_flows' in extraction_data.keys()
         except AssertionError as ae:
-            print('Invalid extraction_data received.')
+            logger.error(__name__ + ': Invalid extraction_data received.')
             raise ae
 
         self._extracted = extraction_data
@@ -147,12 +160,12 @@ class Transformation:
             'symbol_date_combs': self._symbol_date_combs
         }
 
+    @log()
     def _transform_transactions(self):
         """
         Transform the extracted transactions.
         """
 
-        print('_transform_transactions')
         transactions = self._extracted['transactions']
 
         transactions_clean = []
@@ -173,12 +186,14 @@ class Transformation:
 
         self._transactions = transactions_clean
 
+        logger.info(__name__ + 'successful')
+
+    @log()
     def _transform_product_info(self):
         """
         Transform the extracted product info.
         """
 
-        print('_transform_product_info')
         product_info = self._extracted['product_info']
         product_info_clean = {}
 
@@ -195,8 +210,10 @@ class Transformation:
 
         self._product_info = product_info_clean
 
+        logger.info(__name__ + 'successful')
+
+    @log()
     def _transform_cash_flows(self):
-        print('_transform_cash_flows')
 
         cash_flows = self._extracted['cash_flows']
 
@@ -231,13 +248,14 @@ class Transformation:
         cash_flows_grouped = [{'date': cf[0], 'cashflow': cf[1]} for cf in list(cash_flows_grouped.items())]
         self._cash_flows = cash_flows_grouped
 
+        logger.info(__name__ + 'successful')
+
+    @log()
     def _build_portfolio(self):
         """
         Build the portfolio based on the latest available portfolio adding and removing
         positions based on the transactions.
         """
-
-        print('_transform_product_info')
 
         # store daily portfolios
         portfolios = []
@@ -310,11 +328,13 @@ class Transformation:
         self._portfolios = unnested_portfolios
         self._symbol_date_combs = list({*self._symbol_date_combs, *symbol_date_combs})
 
+        logger.info(__name__ + 'successful')
+
+    @log()
     def _transform_symbol_date_combs(self):
         """
         Transform the newly created symbol-date combinations.
         """
-        print('_transform_symbol_date_combs')
 
         # dates only
         dates = [x[1] for x in self._symbol_date_combs]
@@ -326,12 +346,13 @@ class Transformation:
         self._symbol_date_combs = [{'symbol': comb[0], 'date': comb[1]} for comb in self._symbol_date_combs
                                    if comb not in existing]
 
+        logger.info(__name__ + 'successful')
+
+    @log()
     def _transform_price_data(self):
         """
         Transform the extracted price data.
         """
-
-        print('_transform_price_data')
 
         price_data = self._extracted['price_data']
 
@@ -350,6 +371,8 @@ class Transformation:
         combs = [tuple(x) for x in molten.loc[:, ['symbol', 'date']].to_dict('split')['data']]
 
         self._symbol_date_combs = list({*self._symbol_date_combs, *combs})
+
+        logger.info(__name__ + 'successful')
 
     def run(self):
         """
@@ -380,32 +403,36 @@ class Loading:
             assert 'symbol_date_combs' in transformation_data.keys()
         except AssertionError as ae:
             print('Invalid transformation_data received.')
+            logger.error(__name__ + ': Invalid transformation_data received.')
             raise ae
 
         self._transformation_data = transformation_data
 
+    @log()
     def _load_transactions(self):
         """
         Load the transactions into the Transaction table.
         """
-        print('_load_transactions')
         transaction_objects = [Transaction(**t) for t in self._transformation_data['transactions']]
         Transaction.objects.bulk_create(transaction_objects)
 
+        logger.info(__name__ + 'successful')
+
+    @log()
     def _load_product_info(self):
         """
         Load the product info into the Asset table.
         """
-        print('_load_product_info')
         asset_objects = [Asset(**info[1]) for info in self._transformation_data['product_info'].items()]
         Asset.objects.bulk_create(asset_objects)
+
+        logger.info(__name__ + 'successful')
 
     def _load_cash_flows(self):
         """
         Load the cash flows into the Cashflow table. Since some dates might already have cashflows in the
         database, we call update_or_create on those. For the new ones, we use bulk_create for performance reasons.
         """
-        print('_load_cash_flows')
 
         # split between existing ones and new ones
         dates = [cf['date'] for cf in self._transformation_data['cash_flows']]
@@ -422,13 +449,16 @@ class Loading:
         for cashflow in update_cashflows:
             Cashflow.objects.update_or_create(date=cashflow['date'], defaults={'cashflow': cashflow['cashflow']})
 
+        logger.info(__name__ + 'successful')
+
     def _load_symbol_date_combs(self):
         """
         Load the symbol-date-combinations into the DimensionSymbolDate table.
         """
-        print('_load_symbol_date_combs')
         symbol_date_objects = [DimensionSymbolDate(**comb) for comb in self._transformation_data['symbol_date_combs']]
         DimensionSymbolDate.objects.bulk_create(symbol_date_objects)
+
+        logger.info(__name__ + 'successful')
 
     @staticmethod
     def _symbol_date_prep(data, retained_column):
@@ -438,6 +468,9 @@ class Loading:
         :param data: the data set to add the id to (should be in record form)
         :param retained_column: the other column to retain in the data set in addition to symbol_date_id
         """
+
+        if len(data) == 0:
+            return []
 
         dates = [x['date'] for x in data]
         symbols = list(set([x['symbol'] for x in data]))
@@ -453,27 +486,31 @@ class Loading:
 
         return records
 
+    @log()
     def _load_price_data(self):
         """
         Load the price data into the Price table.
         """
-        print('_load_price_data')
 
         records = self._symbol_date_prep(self._transformation_data['price_data'], 'price')
 
         price_objects = [Price(**p) for p in records]
         Price.objects.bulk_create(price_objects)
 
+        logger.info(__name__ + 'successful')
+
+    @log()
     def _load_portfolios(self):
         """
         Load the portfolios into the Depot table.
         """
-        print('_load_portfolios')
 
         records = self._symbol_date_prep(self._transformation_data['portfolios'], 'pieces')
 
         depot_objects = [Depot(**d) for d in records]
         Depot.objects.bulk_create(depot_objects)
+
+        logger.info(__name__ + 'successful')
 
     def run(self):
         """

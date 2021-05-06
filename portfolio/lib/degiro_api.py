@@ -265,6 +265,10 @@ class DegiroAPI:
             return list()
 
         data = r.json()
+
+        if 'cashMovements' not in data['data']:
+            return []
+
         movs = []
         for rmov in data['data']['cashMovements']:
             mov = dict()

@@ -31,7 +31,7 @@ class DepotManager(models.Manager):
         """
         if not self.exists():
             return None
-        return self.latest('symbol_date__date').date
+        return self.latest('symbol_date__date').symbol_date.date
 
     def with_prices(self) -> QuerySet:
         """
@@ -47,7 +47,7 @@ class DepotManager(models.Manager):
 
 class DimensionSymbolDateManager(models.Manager):
     def get_existing(self, dates, symbols):
-        if not self.exists():
+        if not self.exists() or len(dates) == 0 or len(symbols) == 0:
             return self.none()
 
         return self.filter(
