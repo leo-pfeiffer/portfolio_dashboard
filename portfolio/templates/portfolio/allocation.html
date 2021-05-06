@@ -1,44 +1,44 @@
 {% extends 'degiro/base.html' %}
-{% block content %}
-<head>
-    <title>Allokation</title>
-    <meta charset=utf-8 />
-</head>
-  <div id="container" style="width: 75%; margin-left: 2.5%">
-    <canvas id="portfolio-allocation"></canvas>
-  </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
-  <script>
+{% block content %}
+    <div id="container" style="width: 75%; margin-left: 2.5%">
+        <canvas id="portfolio-allocation"></canvas>
+    </div>
+{% endblock %}
+
+{% block javascript %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
+<script src="https://google.github.io/palette.js/palette.js"></script>
+<script>
+    const allocationData = {{ data|safe }}
+    const allocationLabels = {{ labels|safe }}
+
+    const colorPalette = palette('sequential', allocationData.length).map((hex) => '#' + hex)
 
     var config = {
-      type: 'pie',
-      data: {
-        datasets: [{
-          data: {{ data|safe }},
-          backgroundColor: [
-              <!--Todo: Make automatic color scheme! -->
-            "#00B7FF","#09B1F6","#12AAED","#1AA4E5","#239EDC","#2C97D3","#3591CA","#3E8BC1","#4685B9","#4F7EB0",
-            "#5878A7","#61729E","#6A6B95","#72658D","#7B5F84","#84587B","#8D5272","#954C6A","#9E4561","#A73F58",
-            "#B0394F","#B93246","#C12C3E","#CA2635","#D3202C","#DC1923","#E5131A","#ED0D12","#F60609","#FF0000"
-          ],
-          label: 'Symbol'
-        }],
-        labels: {{ labels|safe }}
-      },
-      options: {
-        responsive: true,
-        legend: {
-          position: 'left'
+        type: 'pie',
+        data: {
+            datasets: [{
+                data: allocationData,
+                backgroundColor: colorPalette,
+                label: 'Symbol'
+            }],
+            labels: allocationLabels
         },
-      }
-    };
+        options: {
+            responsive: true,
+            legend: {
+            position: 'left'
+        },
+    }
+};
 
-    window.onload = function() {
-      var ctx = document.getElementById('portfolio-allocation').getContext('2d');
-      window.myPie = new Chart(ctx, config);
-    };
+window.onload = function() {
+    var ctx = document.getElementById('portfolio-allocation').getContext('2d');
+    window.myPie = new Chart(ctx, config);
+};
 
-  </script>
+</script>
 
 {% endblock %}

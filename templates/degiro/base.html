@@ -2,83 +2,85 @@
 <!doctype html>
 <html lang="en">
     <!-- START OF HEADER-->
-    <head><meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-    * {box-sizing: border-box;}
-
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-    }
-
-    .header {
-      overflow: hidden;
-      background-color: #009fdf;
-      padding: 20px 10px;
-    }
-
-    .header a {
-      float: left;
-      color: white;
-      text-align: center;
-      padding: 12px;
-      text-decoration: none;
-      font-size: 18px;
-      line-height: 25px;
-      border-radius: 4px;
-    }
-
-    .header a.logo {
-      font-size: 25px;
-      font-weight: bold;
-    }
-
-    .header a:hover {
-      background-color: white;
-      color: black;
-    }
-
-    .header a.active {
-      background-color: white;
-      color: black;
-    }
-
-    .header-right {
-      float: right;
-    }
-
-    @media screen and (max-width: 500px) {
-      .header a {
-        float: none;
-        display: block;
-        text-align: left;
-      }
-
-      .header-right {
-        float: none;
-      }
-    }
-    </style>
-        <link rel="shortcut icon" href="{% static 'degiro/images/favicon.ico' %}" />
-    </head>
-    <body>
-
-    <div class="header">
-      <a href="/" class="logo">Degiro</a>
-      <div class="header-right">
-        <a class="active" href="/">Startseite</a>
-        <a href="/contact">Kontakt</a>
-      </div>
-    </div>
-    </body>
-    <!-- END OF HEADER -->
-  <head>
+    <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <style>
+        * {box-sizing: border-box;}
+
+        body {
+          margin: 0;
+          font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .header {
+          overflow: hidden;
+          background-color: #009fdf;
+          padding: 20px 10px;
+        }
+
+        .header a {
+          float: left;
+          color: white;
+          text-align: center;
+          padding: 12px;
+          text-decoration: none;
+          font-size: 18px;
+          line-height: 25px;
+          border-radius: 4px;
+        }
+
+        .header a.logo {
+          font-size: 25px;
+          font-weight: bold;
+        }
+
+        .header a:hover {
+          background-color: white;
+          color: black;
+        }
+
+        .header a.active {
+          background-color: white;
+          color: black;
+        }
+
+        .header-right {
+          float: right;
+        }
+
+        @media screen and (max-width: 500px) {
+          .header a {
+            float: none;
+            display: block;
+            text-align: left;
+          }
+
+          .header-right {
+            float: none;
+          }
+        }
+    </style>
+
+    <link rel="shortcut icon" href="{% static 'degiro/images/favicon.ico' %}" />
     <link href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700,800,900" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
 	<link rel="stylesheet" href="{% static 'degiro/css/style.css' %}">
+
   </head>
-  <body style="background-color: white;">
+
+    <!-- END OF HEADER -->
+
+<body style="background-color: white;">
+    <div class="header">
+        <a href="/" class="logo">Degiro</a>
+        <div class="header-right">
+            <a class="active" href="/">Startseite</a>
+            <a href="/contact">Kontakt</a>
+        </div>
+    </div>
+
 	<div class="wrapper d-flex align-items-stretch">
 		<nav id="sidebar" class="active">
 			<div class="custom-menu">
@@ -116,6 +118,7 @@
 				</div>
 			</div>
 		</nav>
+    </div>
 
 	<!-- Page Content  -->
 	<div id="content" class="p-4 p-md-5 pt-5">
@@ -123,7 +126,13 @@
 		{% endblock %}
 	</div>
 
+</body>
+
+{% block javascript %}
+
     <script src="{% static 'degiro/js/jquery.min.js' %}"></script>
     <script src="{% static 'degiro/js/main.js' %}"></script>
-  </body>
+
+{% endblock %}
+
 </html>
