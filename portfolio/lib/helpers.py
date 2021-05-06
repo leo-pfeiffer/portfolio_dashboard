@@ -5,7 +5,7 @@ from dateutil.relativedelta import relativedelta
 from django.db.models import F
 
 from portfolio.lib.utils import date_range_gen
-from portfolio.models import Depot
+from portfolio.models import Depot, Cashflow
 
 
 # todo ==== all the following stuff definitely needs to be structured better
@@ -83,6 +83,6 @@ def refresh_cashflows():
         upload_df = upload_df.merge(cashflow_df, left_index=True, right_on='date', how="left").set_index("date").ffill()
         upload_df = upload_df.reset_index()
 
-        Cashflows.objects.bulk_create([Cashflows(**vals) for vals in upload_df.to_dict('records')])
+        Cashflow.objects.bulk_create([Cashflow(**vals) for vals in upload_df.to_dict('records')])
 
 

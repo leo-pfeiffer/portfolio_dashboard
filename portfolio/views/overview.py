@@ -3,7 +3,6 @@ from django.shortcuts import render
 from django.views.generic import TemplateView
 from django_tables2 import RequestConfig
 
-from portfolio.lib.helpers import generate_overview
 from portfolio.tables import PortfolioTable
 
 

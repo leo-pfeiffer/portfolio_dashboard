@@ -55,3 +55,12 @@ class DimensionSymbolDateManager(models.Manager):
             date__lte=max(dates),
             symbol__in=symbols
         ).values_list('id', 'symbol', 'date')
+
+
+class CashflowManager(models.Manager):
+
+    def get_existing(self, dates):
+        if not self.exists():
+            return self.none()
+
+        return self.filter(date__in=dates).values('date', 'cashflow')

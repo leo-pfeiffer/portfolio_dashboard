@@ -63,10 +63,10 @@ class DegiroAPI:
             self.sess = None
             self.sess_id = None
 
-    # This contain loads of user data, main interest here is the 'intAccount' -> also contains personal data
     def get_config(self) -> int:
         """
-        Get configuration data about the user. Some of this data is required for other methods.
+        Get configuration data about the user. Some of this data is required for other methods, specifically
+        the intAccount is required for user identification.
         :return: HTTP Request Status code
         """
         url = 'https://trader.degiro.nl/pa/secure/client'
@@ -245,7 +245,8 @@ class DegiroAPI:
         Get all account movements between fromDate and toDate.
         :param from_date: Date (string of format dd/mm/yyyy)
         :param to_date: Date (string of format dd/mm/yyyy)
-        :return: List of dictionaries containing todo
+        :return: List of dictionaries representing account movements. Movement type can be identified
+          by the 'type' value in each dictionary.
         """
         from_date = self._get_date_string(from_date)
         to_date = self._get_date_string(to_date)
@@ -298,6 +299,17 @@ class DegiroAPI:
         df = df.reset_index()
         df.change = -df.change
         df.columns = ['date', 'cashflow']
+
+        # 'type' == 'CASH_TRANSACTION'  and
+        # 'description' in ['flatex Einzahlung', 'Einzahlung']
+
+        # {'', '', '(flatex Cash Sweep Transfer) ?',
+        #  '', , '', '',
+        #  '', '',
+        #  '', '', 'Dividende', 'Flatex Interest',
+        #  'Barausgleich Kapitalmaßnahme (Aktie)'}
+
+        # ? 'flatex Cash Sweep Transfer',
 
         return df
 

@@ -9,7 +9,7 @@ import datetime
 
 from portfolio.lib.degiro_api import DegiroAPI
 from portfolio.lib.yf_api import YF
-from portfolio.models import Depot, Transactions, Assets, Prices, DimensionSymbolDate
+from portfolio.models import Depot, Transaction, Asset, Price, DimensionSymbolDate, Cashflow
 from django.db.models import F
 
 
@@ -20,6 +20,7 @@ class Extraction:
         self._transactions = list()
         self._product_info = dict()
         self._prices = list()
+        self._cash_flows = list()
 
         from_date = Depot.objects.get_latest_date()
         self._from_date = from_date if from_date else datetime.datetime(2020, 1, 1).date()
@@ -31,6 +32,7 @@ class Extraction:
             'transactions': self._transactions,
             'product_info': self._product_info,
             'price_data': self._prices,
+            'cash_flows': self._cash_flows,
             'from_date': self._from_date
         }
 
@@ -57,7 +59,7 @@ class Extraction:
 
         # exclude existing transactions (in case of small overlap)
         self._transactions = [x for x in transactions if x['id'] not in
-                              Transactions.objects.filter(id__in=transactions).values('id')]
+                              Transaction.objects.filter(id__in=transactions).values('id')]
 
     def _extract_product_info(self):
         """"
@@ -68,6 +70,14 @@ class Extraction:
 
         product_ids = list(set([str(x['productId']) for x in self._transactions]))
         self._product_info = self._degiro.get_products_by_id(product_ids)
+
+    def _extract_cash_flows(self):
+        """
+        Extract cash flows.
+        """
+        print('_extract_cash_flows')
+
+        self._cash_flows = self._degiro.get_account_movements(self._from_date, datetime.date.today())
 
     def _extract_price_data(self):
         """
@@ -94,6 +104,7 @@ class Extraction:
         self._config()
         self._extract_transactions()
         self._extract_product_info()
+        self._extract_cash_flows()
         self._extract_price_data()
         self._exit()
 
@@ -111,6 +122,7 @@ class Transformation:
             assert 'product_info' in extraction_data.keys()
             assert 'price_data' in extraction_data.keys()
             assert 'from_date' in extraction_data.keys()
+            assert 'cash_flows' in extraction_data.keys()
         except AssertionError as ae:
             print('Invalid extraction_data received.')
             raise ae
@@ -118,6 +130,7 @@ class Transformation:
         self._extracted = extraction_data
         self._transactions = []
         self._product_info = {}
+        self._cash_flows = []
         self._price_data = {}
         self._portfolios = []
         self._symbol_date_combs = []
@@ -128,6 +141,7 @@ class Transformation:
         return {
             'transactions': self._transactions,
             'product_info': self._product_info,
+            'cash_flows': self._cash_flows,
             'price_data': self._price_data,
             'portfolios': self._portfolios,
             'symbol_date_combs': self._symbol_date_combs
@@ -180,6 +194,42 @@ class Transformation:
             product_info_clean[product]['currency'] = product_info[product]['currency']
 
         self._product_info = product_info_clean
+
+    def _transform_cash_flows(self):
+        print('_transform_cash_flows')
+
+        cash_flows = self._extracted['cash_flows']
+
+        # filter correct transaction types and descriptions
+        cash_flows = [{'date': cf['date'].date(), 'cashflow': cf['change']} for cf in cash_flows
+                      if cf['type'] == 'CASH_TRANSACTION'
+                      and cf['description'] in ['Einzahlung', 'Auszahlung']]
+
+        # group by date
+        cash_flows_grouped = {}
+        for cf in cash_flows:
+            if cf['date'] in cash_flows_grouped:
+                cash_flows_grouped[cf['date']] += cf['cashflow']
+            else:
+                cash_flows_grouped[cf['date']] = cf['cashflow']
+
+        # get existing transactions on the same date
+        existing = Cashflow.objects.get_existing(cash_flows_grouped.keys())
+
+        # if none exist, we're done
+        if len(existing) == 0:
+            # convert dict to list of dicts
+            cash_flows_grouped = [{'date': cf[0], 'cashflow': cf[1]} for cf in list(cash_flows_grouped.items())]
+            self._cash_flows = cash_flows_grouped
+            return
+
+        # update the new cashflows on a date by the ones already existing on that date
+        for cf in existing:
+            cash_flows_grouped[cf['date']] += cf['cashflow']
+
+        # convert dict to list of dicts
+        cash_flows_grouped = [{'date': cf[0], 'cashflow': cf[1]} for cf in list(cash_flows_grouped.items())]
+        self._cash_flows = cash_flows_grouped
 
     def _build_portfolio(self):
         """
@@ -307,6 +357,7 @@ class Transformation:
         """
         self._transform_transactions()
         self._transform_product_info()
+        self._transform_cash_flows()
         self._build_portfolio()
         self._transform_price_data()
         self._transform_symbol_date_combs()
@@ -323,6 +374,7 @@ class Loading:
         try:
             assert 'transactions' in transformation_data.keys()
             assert 'product_info' in transformation_data.keys()
+            assert 'cash_flows' in transformation_data.keys()
             assert 'price_data' in transformation_data.keys()
             assert 'portfolios' in transformation_data.keys()
             assert 'symbol_date_combs' in transformation_data.keys()
@@ -334,19 +386,41 @@ class Loading:
 
     def _load_transactions(self):
         """
-        Load the transactions into the Transactions table.
+        Load the transactions into the Transaction table.
         """
         print('_load_transactions')
-        transaction_objects = [Transactions(**t) for t in self._transformation_data['transactions']]
-        Transactions.objects.bulk_create(transaction_objects)
+        transaction_objects = [Transaction(**t) for t in self._transformation_data['transactions']]
+        Transaction.objects.bulk_create(transaction_objects)
 
     def _load_product_info(self):
         """
-        Load the product info into the Assets table.
+        Load the product info into the Asset table.
         """
         print('_load_product_info')
-        asset_objects = [Assets(**info[1]) for info in self._transformation_data['product_info'].items()]
-        Assets.objects.bulk_create(asset_objects)
+        asset_objects = [Asset(**info[1]) for info in self._transformation_data['product_info'].items()]
+        Asset.objects.bulk_create(asset_objects)
+
+    def _load_cash_flows(self):
+        """
+        Load the cash flows into the Cashflow table. Since some dates might already have cashflows in the
+        database, we call update_or_create on those. For the new ones, we use bulk_create for performance reasons.
+        """
+        print('_load_cash_flows')
+
+        # split between existing ones and new ones
+        dates = [cf['date'] for cf in self._transformation_data['cash_flows']]
+        existing_dates = list(Cashflow.objects.get_existing(dates).values_list('date', flat=True))
+
+        new_cashflows = [cf for cf in self._transformation_data['cash_flows'] if cf['date'] not in existing_dates]
+        update_cashflows = [cf for cf in self._transformation_data['cash_flows'] if cf['date'] in existing_dates]
+
+        # create new cashflows
+        new_cashflow_objects = [Cashflow(**cf) for cf in new_cashflows]
+        Cashflow.objects.bulk_create(new_cashflow_objects)
+
+        # update existing cashflows
+        for cashflow in update_cashflows:
+            Cashflow.objects.update_or_create(date=cashflow['date'], defaults={'cashflow': cashflow['cashflow']})
 
     def _load_symbol_date_combs(self):
         """
@@ -359,7 +433,7 @@ class Loading:
     @staticmethod
     def _symbol_date_prep(data, retained_column):
         """
-        Add the appropriate symbol_date ID to the provided data in order to make upload to Depot and Prices model
+        Add the appropriate symbol_date ID to the provided data in order to make upload to Depot and Price model
         possible (due to FK to DimensionSymbolDate).
         :param data: the data set to add the id to (should be in record form)
         :param retained_column: the other column to retain in the data set in addition to symbol_date_id
@@ -381,14 +455,14 @@ class Loading:
 
     def _load_price_data(self):
         """
-        Load the price data into the Prices table.
+        Load the price data into the Price table.
         """
         print('_load_price_data')
 
         records = self._symbol_date_prep(self._transformation_data['price_data'], 'price')
 
-        price_objects = [Prices(**p) for p in records]
-        Prices.objects.bulk_create(price_objects)
+        price_objects = [Price(**p) for p in records]
+        Price.objects.bulk_create(price_objects)
 
     def _load_portfolios(self):
         """
@@ -407,6 +481,7 @@ class Loading:
         """
         self._load_transactions()
         self._load_product_info()
+        self._load_cash_flows()
         self._load_symbol_date_combs()
         self._load_price_data()
         self._load_portfolios()

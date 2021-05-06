@@ -3,7 +3,7 @@ from django.shortcuts import render
 from django.views.generic import TemplateView
 from django_tables2 import RequestConfig
 
-from portfolio.lib.helpers import generate_overview, initiate_portfolio, create_performance_time_series
+from portfolio.lib.helpers import create_performance_time_series
 from portfolio.tables import PortfolioTable
 
 
