@@ -4,7 +4,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 
 
 class IndexView(LoginRequiredMixin, TemplateView):
-    template_name = 'portfolio/index.html'
+    template_name = 'portfolio/new-index.html'
 
     def get(self, request, **kwargs):
-        return render(request, self.template_name)
+        return render(request, self.template_name, {
+            'username': 'Heinrich Pfeiffer'
+        })
