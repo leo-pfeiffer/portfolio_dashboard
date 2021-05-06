@@ -5,6 +5,28 @@ from scipy.stats import norm
 
 class PerformanceMeasures:
 
+    HELP_TEXT = {
+            'returns': "Die Rendite berechnet sich als die prozentuale Veränderung des" \
+               " Portfoliowertes seit Auflage des Portfolios.",
+
+            'annualized_returns': "Die annualisierte Rendite bezieht sich auf die durchschnittliche Rendite" \
+               " des Portfolios pro Jahr.",
+
+            'std': "Die Volatilität beschreibt die durchschnittle Schwankung (Standardabweichung)" \
+               " des Portfoliowertes pro Jahr.",
+
+            'sharpe': "Das Verhältnis der Rendite zur Volatilität steht als Kennzahl für" \
+               " das Verhältnis der Chance zum Risiko.",
+
+            'var': "Der Value at Risk zum 99% Niveau (VaR 99%)" \
+               " gibt an, welche Verlusthöhe innerhalb eines Tages mit einer" \
+               " Wahrscheinlichkeit von 99% nicht überschritten wird.",
+
+            'max_drawdown': "Der Maximum Drawdown ist der kumulierte Verlust, welcher innerhalb" \
+               " einer Periode eingetreten sein könnte, wenn der Anleger zu dem Zeitpunkt eines Höchststands" \
+               " investiert hätte."
+        }
+
     @staticmethod
     def measure_loop(performance: pd.Series) -> dict:
         """
@@ -74,3 +96,4 @@ class PerformanceMeasures:
         max_daily_drawdown = daily_drawdown.rolling(window, min_periods=1).min()
 
         return {PerformanceMeasures.max_drawdown.__name__: min(max_daily_drawdown)}
+

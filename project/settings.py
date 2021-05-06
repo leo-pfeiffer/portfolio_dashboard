@@ -136,8 +136,6 @@ else:
     STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 STATIC_URL = '/static/'
-IMAGES = os.path.join(BASE_DIR, 'static/degiro/images/')
-PDFS = os.path.join(BASE_DIR, 'static/degiro/pdf/')
 
 LOGGING = {
     'version': 1,

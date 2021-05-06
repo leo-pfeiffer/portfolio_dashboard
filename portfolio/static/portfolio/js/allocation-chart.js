@@ -1,5 +1,3 @@
-console.log('hello from allocation')
-
 $(document).ready(() => {
       const config = {
         type: 'doughnut',

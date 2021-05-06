@@ -5,6 +5,7 @@ from django.views.generic import TemplateView
 from django.contrib.auth.mixins import LoginRequiredMixin
 
 from portfolio.lib.aggregation import create_portfolio, create_performance_series
+from portfolio.lib.performance_measures import PerformanceMeasures
 
 
 class IndexView(LoginRequiredMixin, TemplateView):
@@ -20,6 +21,16 @@ class IndexView(LoginRequiredMixin, TemplateView):
         start_of_year = performance_series.loc[datetime.date(datetime.date.today().year, 1, 1):][0]
         current = performance_series[-1]
         ytd_performance_percent = round(((current / start_of_year) - 1) * 100, 2)
+
+        # performance measures
+        measure_data = PerformanceMeasures.measure_loop(performance_series)
+        for key, value in measure_data.items():
+            if key == 'sharpe':
+                measure_data[key] = round(value, 2)
+            else:
+                measure_data[key] = '{:.2%}'.format(value)
+
+        measure_help = PerformanceMeasures.HELP_TEXT
 
         # convert portfolio to records
         portfolio_records = portfolio.to_dict('records')
@@ -43,5 +54,6 @@ class IndexView(LoginRequiredMixin, TemplateView):
             'allocation_data': allocation_data,
             'performance_labels': performance_labels,
             'performance_data': performance_data,
-
+            'measure_data': measure_data,
+            'measure_help': measure_help
         })
