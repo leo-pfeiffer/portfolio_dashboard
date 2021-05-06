@@ -13,7 +13,6 @@ from weasyprint import HTML
 
 from project.settings import IMAGES, PDFS, MAIL
 
-from portfolio.lib.helpers import create_performance_time_series
 from portfolio.lib.yf_api import YF
 from portfolio.tables import PortfolioTable
 

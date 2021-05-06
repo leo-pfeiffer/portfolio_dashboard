@@ -2,7 +2,7 @@ import datetime
 from typing import Union
 
 from django.db import models
-from django.db.models import QuerySet, F
+from django.db.models import QuerySet, F, Sum
 
 
 class DepotManager(models.Manager):
@@ -42,7 +42,17 @@ class DepotManager(models.Manager):
 
         return self.annotate(symbol=F('symbol_date__symbol'),
                              date=F('symbol_date__date'),
-                             price=F('symbol_date__prices__price')).values('symbol', 'date', 'pieces', 'price')
+                             price=F('symbol_date__price__price')).values('symbol', 'date', 'pieces', 'price')
+
+    def value_per_date(self) -> QuerySet:
+        """
+        Return the Depot value per date in order of date.
+        """
+        if not self.exists():
+            return self.none()
+
+        return self.with_prices().annotate(subtotal=F('pieces') * F('price')).values('date')\
+            .annotate(total=Sum('subtotal')).order_by('date')
 
 
 class DimensionSymbolDateManager(models.Manager):
