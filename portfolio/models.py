@@ -3,9 +3,6 @@ from django.db import models
 from portfolio.managers import DepotManager, DimensionSymbolDateManager, CashflowManager
 
 
-# todo add descriptions and verbose names
-
-
 class DimensionSymbolDate(models.Model):
     symbol = models.CharField(max_length=100, verbose_name='Stock market symbol')
     date = models.DateField(verbose_name='Date')
