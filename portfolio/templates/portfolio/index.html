@@ -1,103 +1,381 @@
-{% extends 'degiro/base.html' %}
 {% load static %}
-{% block content %}
-<style>
+<!DOCTYPE html>
+<html lang="en">
 
-        * {
-            margin: 0;
-            padding: 0;
-        }
-        .imgbox {
-            display: grid;
-        }
-        .center-fit {
-            max-width: 80%;
-            max-height: 80%;
-            margin: auto;
-        }
+<head>
 
-    .link-table {
-        width: 100%;
-    }
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
 
-    .td-even {
-        padding-bottom: 30px;
-        padding-top: 30px;
-        width: 25%;
-        background-color: #e3e3e3;
-        color: #009fdf;
-        text-align: center;
-        vertical-align: center;
-    }
+    <title>Portfolio Dashboard</title>
 
-    .td-even a {
-        color: #009fdf;
-    }
-    .td-even a:hover {
-        color: #009fdf;
-        font-weight: bold;
-    }
+    <link rel="shortcut icon" href="{% static 'portfolio/media/favicon.ico' %}">
 
-    .td-odd {
-        padding-bottom: 30px;
-        padding-top: 30px;
-        width: 25%;
-        background-color: #009fdf;
-        color: #e3e3e3;
-        text-align: center;
-        vertical-align: center;
-    }
+    <!-- Custom fonts for this template-->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"/>
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.24/datatables.min.css"/>
 
-    .td-odd a:hover {
-        color: #e3e3e3;
-        font-weight: bold;
-    }
+    <!-- Custom styles for this template-->
+    <link href="{% static 'portfolio/css/sb-admin-2.css' %}" rel="stylesheet">
 
-    .td-odd a {
-        color: #e3e3e3;
-    }
+</head>
 
-    .link-title {
-        font-size: 18px;
-        padding-top: 30px;
-    }
+<body id="page-top">
 
-</style>
+    <!-- Page Wrapper -->
+    <div id="wrapper">
 
-<div class="imgbox">
-    <img src="{% static 'degiro/images/Degiro.jpg' %}" alt='Degiro Logo' class="center-fit">
-</div>
+        <!-- Content Wrapper -->
+        <div id="content-wrapper" class="d-flex flex-column">
 
-<table class="link-table" id="setter">
-    <tbody>
-     <tr>
-       <td class="td-odd" id="overview-box">
-           <a href="/overview">
-                <img src="{% static 'degiro/images/menu_light.png' %}" alt='Menu symbol' style="width: 15%;">
-                <div class="link-title">Portfolio</div>
-           </a>
-       </td>
-       <td class="td-even" id="allocation-box">
-           <a href="/allocation">
-               <img src="{% static 'degiro/images/pie_chart_blue.png' %}" alt='Pie Chart symbol' style="width: 15%;">
-               <div class="link-title">Allokation</div>
-           </a>
-       </td>
-       <td class="td-odd" id="performance-box">
-           <a href="/performance">
-               <img src="{% static 'degiro/images/graph_light.png' %}" alt='Graph symbol' style="width: 15%;">
-               <div class="link-title">Wertentwicklung</div>
-           </a>
-       </td>
-       <td class="td-even" id="report-box">
-           <a href="/create-report">
-               <img src="{% static 'degiro/images/report_blue.png' %}" alt='Report symbol' style="width: 15%;">
-               <div class="link-title">Report</div>
-           </a>
-       </td>
-     </tr>
-    </tbody>
-</table>
-{% endblock %}
+            <!-- Main Content -->
+            <div id="content">
 
+                <!-- Topbar -->
+                <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
 
+                    <!-- Sidebar Toggle (Topbar) -->
+                    <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                        <i class="fa fa-bars"></i>
+                    </button>
+
+                    <!-- Topbar Search -->
+                    <form
+                        class="d-none d-sm-inline-block form-inline mr-auto ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+                        <div class="input-group">
+                            <input type="text" class="form-control bg-light border-0 small" placeholder="Search for..."
+                                aria-label="Search" aria-describedby="basic-addon2">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="button">
+                                    <i class="fas fa-search fa-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Topbar Navbar -->
+                    <ul class="navbar-nav ml-auto">
+
+                        <!-- Nav Item - Search Dropdown (Visible Only XS) -->
+                        <li class="nav-item dropdown no-arrow d-sm-none">
+                            <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="fas fa-search fa-fw"></i>
+                            </a>
+                            <!-- Dropdown - Messages -->
+                            <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
+                                aria-labelledby="searchDropdown">
+                                <form class="form-inline mr-auto w-100 navbar-search">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control bg-light border-0 small"
+                                            placeholder="Search for..." aria-label="Search"
+                                            aria-describedby="basic-addon2">
+                                        <div class="input-group-append">
+                                            <button class="btn btn-primary" type="button">
+                                                <i class="fas fa-search fa-sm"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </li>
+
+                        <div class="topbar-divider d-none d-sm-block"></div>
+
+                        <!-- Nav Item - User Information -->
+                        <li class="nav-item dropdown no-arrow">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                                data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ request.user.username }}</span>
+                                <i class="img-profile rounded-circle fas fa-2x fa-user"></i>
+                            </a>
+                            <!-- Dropdown - User Information -->
+                            <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                                aria-labelledby="userDropdown">
+                                <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                                    <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                    Abmelden
+                                </a>
+                            </div>
+                        </li>
+
+                    </ul>
+
+                </nav>
+                <!-- End of Topbar -->
+
+                <!-- Begin Page Content -->
+                <div class="container-fluid">
+
+                    <!-- Page Heading -->
+                    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                        <h1 class="h3 mb-0 text-gray-800">Dashboard</h1>
+                        <a href="#" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i
+                                class="fas fa-download fa-sm text-white-50"></i> Generate Report</a>
+                    </div>
+
+                    <!-- Content Row -->
+                    <div class="row">
+
+                        <!-- Earnings -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                Portfolio Gesamtwert</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ portfolio_value }} EUR</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-euro-sign fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-success shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Wertentwicklung (ytd)</div>
+
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ ytd_performance }} %</div>
+
+                                        </div>
+                                        <div class="col-auto">
+                                            {% if ytd_performance >= 0 %}
+                                                <i class="fas fa-angle-up fa-2x text-success"></i>
+                                            {% endif %}
+                                            {% if ytd_performance < 0 %}
+                                                <i class="fas fa-angle-up fa-2x text-danger"></i>
+                                            {% endif %}
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Earnings (Monthly) Card Example -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-info shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Wertpapiere</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ portfolio | length }}</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-chart-pie fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pending Requests Card Example -->
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-left-warning shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                                Volatilit&auml;t</div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">medium</div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <i class="fas fa-chart-line fa-2x text-gray-300"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Content Row -->
+
+                    <div class="row">
+
+                        <!-- Area Chart -->
+                        <div class="col-xl-8 col-lg-7">
+                            <div class="card shadow mb-4">
+                                <!-- Card Header - Dropdown -->
+                                <div
+                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">Wertentwicklung</h6>
+                                </div>
+                                <!-- Card Body -->
+                                <div class="card-body">
+                                    <div class="chart-area">
+                                        <canvas id="performance-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pie Chart -->
+                        <div class="col-xl-4 col-lg-5">
+                            <div class="card shadow mb-4">
+                                <!-- Card Header - Dropdown -->
+                                <div
+                                    class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                                    <h6 class="m-0 font-weight-bold text-primary">Allokation</h6>
+                                </div>
+                                <!-- Card Body -->
+                                <div class="card-body">
+                                    <div class="chart-pie">
+                                        <canvas id="allocation-chart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Content Row -->
+                    <div class="row">
+
+                        <!-- Table -->
+                        <div class="col-xl-12 col-lg-12">
+                            <div class="card shadow mb-4">
+                            <div class="card-header py-3">
+                                <h6 class="m-0 font-weight-bold text-primary">DataTables Example</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                        <thead>
+                                            <tr>
+                                                <th>Symbol</th>
+                                                <th>Name</th>
+                                                <th>ISIN</th>
+                                                <th>Size</th>
+                                                <th>Price</th>
+                                                <th>Subtotal</th>
+                                                <th>Allocation</th>
+                                            </tr>
+                                        </thead>
+                                        <tfoot>
+                                            <tr>
+                                                <th>Symbol</th>
+                                                <th>Name</th>
+                                                <th>ISIN</th>
+                                                <th>Size</th>
+                                                <th>Price</th>
+                                                <th>Subtotal</th>
+                                                <th>Allocation</th>
+                                            </tr>
+                                        </tfoot>
+                                        <tbody>
+                                            {% for row in portfolio %}
+                                            <tr class="odd gradeX">
+                                                <td>{{ row.symbol }}</td>
+                                                <td>{{ row.name }}</td>
+                                                <td>{{ row.isin }}</td>
+                                                <td>{{ row.size }}</td>
+                                                <td>{{ row.price }}</td>
+                                                <td>{{ row.subtotal }}</td>
+                                                <td>{{ row.allocation }}</td>
+                                            </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+
+                    </div>
+
+                </div>
+                <!-- /.container-fluid -->
+
+            </div>
+            <!-- End of Main Content -->
+
+            <!-- Footer -->
+            <footer class="sticky-footer bg-white">
+                <div class="container my-auto">
+                    <div class="copyright text-center my-auto">
+                        <span>Copyright &copy; Leopold Pfeiffer 2021</span>
+                    </div>
+                </div>
+            </footer>
+            <!-- End of Footer -->
+
+        </div>
+        <!-- End of Content Wrapper -->
+
+    </div>
+    <!-- End of Page Wrapper -->
+
+    <!-- Scroll to Top Button-->
+    <a class="scroll-to-top rounded" href="#page-top">
+        <i class="fas fa-angle-up"></i>
+    </a>
+
+    <!-- Logout Modal-->
+    <div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Bist du sicher?</h5>
+                    <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">Klicke auf "Abmelden", um die aktuelle Sitzung zu beenden..</div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Abbrechen</button>
+                    <a class="btn btn-primary" href="accounts/logout/">Abmelden</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap core JavaScript-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+    <!-- Core plugin JavaScript-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.4.1/jquery.easing.min.js"></script>
+
+    <!-- Custom scripts for all pages-->
+    <script src="{% static "portfolio/js/sb-admin-2.js" %}"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.0.2/chart.min.js"></script>
+    <script src="https://cdn.datatables.net/v/dt/dt-1.10.24/datatables.min.js"></script>
+    <script src="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/jquery.dataTables.min.js"></script>
+
+    <!-- Page level custom scripts -->
+    <script src="https://google.github.io/palette.js/palette.js"></script>
+
+    <script type="text/javascript">
+
+        $(document).ready(function() {
+          $('#dataTable').DataTable();
+        });
+
+        var allocationLabels = {{ allocation_labels | safe }}
+        var allocationData = {{ allocation_data | safe }}
+
+        const allocationColorPalette = palette('mpn65', allocationData.length).map((hex) => '#' + hex)
+
+        var performanceLabels = [{% for Date in performance_labels %}"{{ Date }}",{%endfor%}]
+        var performanceData = {{ performance_data | safe }}
+
+    </script>
+
+    <script src="{% static "portfolio/js/allocation-chart.js" %}"></script>
+    <script src="{% static "portfolio/js/performance-chart.js" %}"></script>
+
+</body>
+
+</html>
