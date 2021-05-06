@@ -1,15 +1,23 @@
 {% extends 'degiro/base.html' %}
 {% block content %}
-    <head>
-        <title>Wertentwicklung</title>
-        <style>#chartdiv {width: 100%; height: 500px;}</style>
 
-    </head>
+    <div id="chartdiv" style="width: 500px; height: 500px;"></div>
+
+    <div id="infobox">
+        <p>Last available price data: {{ timestamp|safe }}</p>
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
 
     <script src="https://www.amcharts.com/lib/4/core.js"></script>
     <script src="https://www.amcharts.com/lib/4/charts.js"></script>
     <script src="https://www.amcharts.com/lib/4/themes/animated.js"></script>
     <script>
+
+        console.log({{ data|safe }})
+
         am4core.options.autoSetClassName = true;
         // Themes begin
         am4core.useTheme(am4themes_animated);
@@ -47,8 +55,8 @@
         var series = chart.series.push(new am4charts.LineSeries());
         series.name = "2015";
         series.id = "s1"
-        series.dataFields.dateX = "date1";
-        series.dataFields.valueY = "price1";
+        series.dataFields.dateX = "date";
+        series.dataFields.valueY = "value";
         series.tooltipText = "[bold]Interval:[/] {dateX.formatDate('MM/dd')}\n [bold]Price: [/]{valueY.value}";
         series.tooltip.fontSize = 13;
         series.tooltip.background.cornerRadius = 0;
@@ -64,24 +72,23 @@
         series.interpolationDuration = 0;
 
         var gradient = new am4core.LinearGradient();
-         gradient.addColor(am4core.color("rgba(229,145,101,0.251)"));
-         gradient.addColor(am4core.color("rgba(229,145,101,0.049)"));
-         gradient.addColor(am4core.color("rgba(229,145,101,0.029)"));
+        gradient.addColor(am4core.color("rgba(229,145,101,0.251)"));
+        gradient.addColor(am4core.color("rgba(229,145,101,0.049)"));
+        gradient.addColor(am4core.color("rgba(229,145,101,0.029)"));
         series.fill = gradient;
         gradient.rotation = 82.5;
 
 
         var bullet = series.bullets.push(new am4charts.CircleBullet());
-          bullet.circle.stroke = am4core.color("#fff");
-          bullet.circle.strokeWidth = 2;
-          bullet.circle.fill = am4core.color("#e59165");
-          bullet.properties.fillOpacity = 0;
-          bullet.properties.strokeOpacity = 0;
+        bullet.circle.stroke = am4core.color("#fff");
+        bullet.circle.strokeWidth = 2;
+        bullet.circle.fill = am4core.color("#e59165");
+        bullet.properties.fillOpacity = 0;
+        bullet.properties.strokeOpacity = 0;
 
-          var bulletState = bullet.states.create("hover");
-          bulletState.properties.fillOpacity = 1;
-          bulletState.properties.strokeOpacity = 1;
-
+        var bulletState = bullet.states.create("hover");
+        bulletState.properties.fillOpacity = 1;
+        bulletState.properties.strokeOpacity = 1;
 
         chart.cursor = new am4charts.XYCursor();
         chart.cursor.xAxis = dateAxis.tooltipDate;
@@ -95,29 +102,29 @@
         chart.scrollbarX.unselectedOverlay.fillOpacity = 0.5;
 
         function customizeThumb() {
-        var line = chart.scrollbarX.thumb.createChild(am4core.Rectangle);
-        line.height = 0.875;
-        line.width = am4core.percent(100);
-        line.fill = am4core.color("#999999");
-        line.valign = "bottom";
+            var line = chart.scrollbarX.thumb.createChild(am4core.Rectangle);
+            line.height = 0.875;
+            line.width = am4core.percent(100);
+            line.fill = am4core.color("#999999");
+            line.valign = "bottom";
         }
 
         customizeThumb(chart.scrollbarX.thumb.background);
 
         function customizeGrip(grip) {
-          // Remove default grip image
-          grip.icon.disabled = true;
+            // Remove default grip image
+            grip.icon.disabled = true;
 
-          // Disable background
-          grip.background.disabled = true;
+            // Disable background
+            grip.background.disabled = true;
 
-          // Add rotated rectangle as bi-di arrow
+            // Add rotated rectangle as bi-di arrow
             var img = grip.createChild(am4core.Circle);
-          img.width = 14;
-          img.height = 14;
-          img.fill = am4core.color("#989898");
-          img.stroke = am4core.color("#fff");
-          img.strokeWidth = 2;
+            img.width = 14;
+            img.height = 14;
+            img.fill = am4core.color("#989898");
+            img.stroke = am4core.color("#fff");
+            img.strokeWidth = 2;
         }
 
         customizeGrip(chart.scrollbarX.startGrip);
@@ -132,10 +139,5 @@
         scrollSeries1.fillOpacity = 1;
         scrollSeries1.fill = am4core.color("#e5e5e5");
     </script>
-    <div id="chartdiv"></div>
-
-    <div id="infobox">
-    <p>Last available price data: {{ timestamp|safe }}</p>
-    </div>
 
 {% endblock %}

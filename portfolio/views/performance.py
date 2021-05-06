@@ -1,9 +1,10 @@
+import datetime
+
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.shortcuts import render
 from django.views.generic import TemplateView
-from django_tables2 import RequestConfig
 
-from portfolio.tables import PortfolioTable
+from portfolio.lib.aggregation import create_performance_series
 
 
 class Performance(LoginRequiredMixin, TemplateView):
@@ -11,20 +12,16 @@ class Performance(LoginRequiredMixin, TemplateView):
 
     def get(self, request, *args, **kwargs):
         """Portfolio performance view"""
-        initiate_portfolio()
 
-        # dummy data
-        # financial_data = get_yahoo_data(['DOCU'], start=datetime.date(2020, 1, 1), end=datetime.date(2020, 7, 11))
-        # prices = financial_data.to_frame().reset_index()
-        # prices.columns = ['date1', 'price1']
-        # data = prices.to_json(orient='records')
-        # timestamp = datetime.date.today()
+        performance = create_performance_series()
+        performance = performance.reset_index()
+        performance.columns = ['date', 'value']
 
-        returns, timestamp = create_performance_time_series()
+        records = performance.to_json(orient='records')
 
-        data = returns.to_json(orient='records')
+        timestamp = datetime.date.today()
 
         return render(request, 'portfolio/performance.html', {
-            'data': data,
+            'data': records,
             'timestamp': timestamp,
         })
