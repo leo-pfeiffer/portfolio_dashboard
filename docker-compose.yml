@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  db:
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    image: "postgres:12"
+    expose:
+      - ${DB_PORT}
+  app:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - 127.0.0.1:8000:8000
+    environment:
+      - DB_HOST=db
+    depends_on:
+      - db
