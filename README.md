@@ -1,7 +1,7 @@
-# degiro
-Custom DegiroAPI account web interface built with Django
+# Portfolio Dashboard
+Custom Portfolio Dashboard for your Degiro account built with Django
 
-## Getting started.
+## Getting started
 
 ### Build with docker-compose
 Run
@@ -73,3 +73,15 @@ python manage.py runserver 0.0.0.0:8000
 ```
 
 You should now be able to access the dashboard on `localhost:8000`.
+
+## Screenshots
+The app contains a dashboard view for you Degiro Portfolio.
+![Dashboard1](resources/screenshots/dashboard1.png)
+![Dashboard2](resources/screenshots/dashboard2.png)
+
+## Technologies
+- [Django](https://www.djangoproject.com/) for the general project setup
+- Degiro API loosely based on [this repository](https://github.com/bramton/degiro).
+- PostgreSQL database for persistent storage
+- [Docker Compose](https://docs.docker.com/compose/) for containerization
+- [SB Admin 2](https://startbootstrap.com/theme/sb-admin-2) bootstrap template for the frontend
