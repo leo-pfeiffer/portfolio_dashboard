@@ -74,6 +74,22 @@ python manage.py runserver 0.0.0.0:8000
 
 You should now be able to access the dashboard on `localhost:8000`.
 
+## Loading data
+
+If you have properly configured your Degiro credentials in the `.env` file, you can fetch your 
+account data from the Degiro API by initiating an ETL process. The ETL process also collects price 
+date from Yahoo finance. 
+
+From within your container (or virtual env) run
+
+```shell
+python manage.py etl 
+```
+
+This will take a few moments (mostly due to the price data being fetched from Yahoo finance).
+
+Once you've run the ETL process, your portfolio data is visible on the dashboard.
+
 ## Screenshots
 The app contains a dashboard view for you Degiro Portfolio.
 ![Dashboard1](resources/screenshots/dashboard1.png)
@@ -82,6 +98,7 @@ The app contains a dashboard view for you Degiro Portfolio.
 ## Technologies
 - [Django](https://www.djangoproject.com/) for the general project setup
 - Degiro API loosely based on [this repository](https://github.com/bramton/degiro).
+- [YFinance](https://github.com/ranaroussi/yfinance) to pull price data for stocks.
 - PostgreSQL database for persistent storage
 - [Docker Compose](https://docs.docker.com/compose/) for containerization
 - [SB Admin 2](https://startbootstrap.com/theme/sb-admin-2) bootstrap template for the frontend

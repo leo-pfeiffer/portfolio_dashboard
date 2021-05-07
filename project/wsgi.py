@@ -1,5 +1,5 @@
 """
-WSGI config for degiro project.
+WSGI config for portfolio_dashboard project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 

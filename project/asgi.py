@@ -1,5 +1,5 @@
 """
-ASGI config for degiro project.
+ASGI config for portfolio_dashboard project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 
