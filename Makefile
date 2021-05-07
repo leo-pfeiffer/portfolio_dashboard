@@ -26,12 +26,12 @@ shell:
 
 .PHONY: migrations
 migrations:
-	docker-compose run --rm app ./manage.py makemigrations columbo
+	docker-compose run --rm app ./manage.py makemigrations
 
 .PHONY: migrate
 migrate:
 	docker-compose run --rm app ./manage.py migrate
 
-.PHONY: migrate
+.PHONY: etl
 migrate:
 	docker-compose run --rm app ./manage.py etl
