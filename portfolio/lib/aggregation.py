@@ -17,6 +17,10 @@ def create_cumulative_cashflow() -> pd.Series:
     # get cashflows from database
     cashflows = list(Cashflow.objects.values('date', 'cashflow').order_by('date'))
 
+    # no cashflows
+    if not len(cashflows):
+        return pd.Series()
+
     # create data frames
     cashflows_frame = pd.DataFrame.from_records(cashflows, index='date')
     cum_sum_frame = pd.DataFrame(index=date_range_gen(cashflows[0]['date'], cashflows[-1]['date']))
@@ -39,6 +43,10 @@ def create_value_series() -> pd.Series:
 
     # get depot value per date
     value_per_date = list(Depot.objects.value_per_date())
+
+    # no depot entries
+    if not len(value_per_date):
+        return pd.Series()
 
     # create data frames
     value_frame = pd.DataFrame.from_records(value_per_date, index='date')
@@ -67,6 +75,10 @@ def create_performance_series() -> pd.Series:
     cum_cashflow = create_cumulative_cashflow()
     portfolio_value = create_value_series()
 
+    # no entries yet
+    if cum_cashflow.empty or portfolio_value.empty:
+        return pd.Series()
+
     # merge frames and forward fill any gaps
     performance = pd.merge(portfolio_value, cum_cashflow, how='left', left_index=True, right_index=True).ffill()
 
@@ -88,6 +100,10 @@ def create_portfolio() -> pd.DataFrame:
             size=F('pieces'),
             subtotal=F('pieces') * F('symbol_date__price__price'),
         ).values('symbol', 'size', 'price', 'subtotal'))
+
+    # no portfolio existsL
+    if len(portfolio) == 0:
+        return pd.DataFrame()
 
     portfolio_frame = pd.DataFrame(portfolio)
 
