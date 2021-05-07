@@ -7,10 +7,13 @@ Custom Portfolio Dashboard for your Degiro account built with Django
 Run
 
 ```shell
-sh setup.sh
+./setup.sh
 ```
 
 from the project root. This will create a `.env` file (if none exists) and builds the container.
+
+The default port in the environment variables (`DJANGO_PORT`) is set to 8000.
+
 Migrations are also applied right away and a superuser is created so that you can login.
 
 This superuser has the credentials
@@ -89,6 +92,19 @@ python manage.py etl
 This will take a few moments (mostly due to the price data being fetched from Yahoo finance).
 
 Once you've run the ETL process, your portfolio data is visible on the dashboard.
+
+## Makefile
+
+The `Makefile` contains a number of convenience PHONY commands that you may use to access certain 
+behaviors more quickly.
+
+For example, to enter the container's bash console, simply run
+
+```shell
+make bash
+```
+
+Have a look at the `Makefile` to learn about the other commands.
 
 ## Screenshots
 The app contains a dashboard view for you Degiro Portfolio.

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # make sure that we are run from the project root
-my_expected_name=setup.sh
+my_expected_name=./setup.sh
 my_actual_name=$0
 
 if [[ "$my_expected_name" != "$my_actual_name" ]]; then
