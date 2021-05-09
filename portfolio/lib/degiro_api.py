@@ -150,23 +150,6 @@ class DegiroAPI:
 
         return cash_funds
 
-    def get_portfolio_summary(self) -> Dict:
-        """
-        Returns a summary of the portfolio.
-        :returns: Portfolio summary
-        """
-        # todo this maybe shouldn't be in the API
-        pf = self.get_portfolio()
-        cf = self.get_cash_funds()
-        tot = 0
-        for eq in pf['PRODUCT'].values():
-            tot += eq['value']
-
-        pf_summary = dict()
-        pf_summary['equity'] = tot
-        pf_summary['cash'] = cf['EUR']['value']
-        return pf_summary
-
     def get_portfolio(self) -> Dict:
         """
         Extracts portfolio from self.data and enriches it with additional information from Degiro
@@ -218,27 +201,6 @@ class DegiroAPI:
 
         return portf_n
 
-    def get_portfolio_df(self):
-        """
-        Build a portfolio data frame
-        # todo should not be in API
-        """
-        total = self.get_portfolio_summary()['equity']
-        portfolio = self.get_portfolio()
-
-        symbols = [x['symbol'] for x in portfolio['PRODUCT'].values()]
-        name = [x['name'] for x in portfolio['PRODUCT'].values()]
-        size = [int(x['size']) for x in portfolio['PRODUCT'].values()]
-        price = [np.round(x['price'], 2) for x in portfolio['PRODUCT'].values()]
-        subtot = [np.round(x['size'] * x['price'], 2) for x in portfolio['PRODUCT'].values()]
-        alloc = [np.round(x / total, 4) for x in subtot]
-
-        df = pd.DataFrame([name, size, price, subtot, alloc]).T
-        df.index = symbols
-        df.columns = ['Name', 'Size', 'Price', 'Subtotal', 'Allocation']
-
-        return df
-
     def get_account_movements(self, from_date: Union[str, datetime.datetime, datetime.date],
                               to_date: Union[str, datetime.datetime, datetime.date]) -> List[Dict]:
         """
@@ -287,35 +249,6 @@ class DegiroAPI:
                 mov['productId'] = rmov['productId']
             movs.append(mov)
         return movs
-
-    def get_cash_flows(self, from_date: datetime.date):
-        """
-        Wrapper around self.get_account_movements that returns only cash flows.
-        Todo this should not be in the API
-        :param from_date: Start date of the cash flows
-        """
-        movements = self.get_account_movements(from_date, datetime.date.today())
-
-        df = pd.DataFrame(movements)
-        df = df.loc[df.type == 'TRANSACTION'].sort_values("date")
-        df.date = df.date.apply(lambda x: x.date)
-        df = df[['date', 'change']].groupby('date').sum()
-        df = df.reset_index()
-        df.change = -df.change
-        df.columns = ['date', 'cashflow']
-
-        # 'type' == 'CASH_TRANSACTION'  and
-        # 'description' in ['flatex Einzahlung', 'Einzahlung']
-
-        # {'', '', '(flatex Cash Sweep Transfer) ?',
-        #  '', , '', '',
-        #  '', '',
-        #  '', '', 'Dividende', 'Flatex Interest',
-        #  'Barausgleich Kapitalmaßnahme (Aktie)'}
-
-        # ? 'flatex Cash Sweep Transfer',
-
-        return df
 
     def get_transactions(self, from_date: Union[str, datetime.datetime, datetime.date],
                          to_date: Union[str, datetime.datetime, datetime.date]) -> List[Dict]:

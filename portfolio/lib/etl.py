@@ -309,7 +309,6 @@ class Transformation:
 
             date_iterator += relativedelta(days=1)
 
-        # todo this can be made nicer
         # unnest portfolios and compile symbol date combinations
         symbol_date_combs = []
 
