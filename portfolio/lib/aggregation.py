@@ -68,7 +68,8 @@ def create_performance_series() -> pd.Series:
     """
 
     # todo: cash position is neglected -> basically considered as loss -> FIX!
-    # todo: on last days, performance blows up. The reason seems to be that that some entries in the Depot database are
+    # todo: on last days, performance blows up if the ETL process is run twice on any given day.
+    #  The reason seems to be that that some entries in the Depot database are
     #  duplicated for that time.. I suspect the reason is in the ETL process somewhere where I messed up the date and
     #  accidentally reload some of the data.
 
