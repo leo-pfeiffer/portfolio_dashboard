@@ -113,7 +113,6 @@ The app contains a dashboard view for you Degiro Portfolio.
 
 ## Technologies
 - [Django](https://www.djangoproject.com/) for the general project setup
-- Degiro API loosely based on [this repository](https://github.com/bramton/degiro)
 - [YFinance](https://github.com/ranaroussi/yfinance) to pull price data for stocks
 - PostgreSQL database for persistent storage
 - [Docker Compose](https://docs.docker.com/compose/) for containerization

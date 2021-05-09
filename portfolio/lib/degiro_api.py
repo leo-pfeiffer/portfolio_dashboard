@@ -1,14 +1,16 @@
 from typing import Dict, List, Union
 
-import numpy as np
-import pandas as pd
 import requests
 import json
 import getpass
 import datetime
-from collections import defaultdict
 
 from project.settings import DEGIRO
+
+import logging
+import traceback
+
+logger = logging.getLogger('db')
 
 
 class DegiroAPI:
@@ -18,10 +20,11 @@ class DegiroAPI:
         self.sess = None
         self.sess_id = None
 
-    def login(self, with2fa: bool = False) -> None:
+    def login(self, twoFactorAuth: bool = False) -> None:
         """
-        Login to the Degiro account.
-        :param with2fa: Set to true, if 2FA is necessary for login.
+        Login the user into their Degiro account.
+        :param twoFactorAuth: Set to true, if 2FA is required for logging in.
+        :raises: RequestException: if HTTP request fails
         """
 
         self.sess = requests.Session()
@@ -36,13 +39,18 @@ class DegiroAPI:
         }
         header = {'content-type': 'application/json'}
 
-        if with2fa:
-            payload['oneTimePassword'] = getpass.getpass("2FA Token: ")
+        # Make user enter 2FA Token if required
+        if twoFactorAuth:
+            payload['oneTimePassword'] = getpass.getpass("Enter 2FA Token: ")
             url += '/totp'
 
-        r = self.sess.post(url, headers=header, data=json.dumps(payload))
+        try:
+            r = self.sess.post(url, headers=header, data=json.dumps(payload))
+        except requests.exceptions.RequestException as e:
+            logger.exception('RequestException: {} //////  Traceback: {}'.format(e, traceback.format_exc()))
+            raise e
 
-        # Get session id
+        # Process session ID
         self.sess_id = r.headers['Set-Cookie']
         self.sess_id = self.sess_id.split(';')[0]
         self.sess_id = self.sess_id.split('=')[1]
@@ -50,31 +58,37 @@ class DegiroAPI:
     def logout(self) -> None:
         """
         Logout the user from the degiro account.
+        :raises: RequestException: if HTTP request fails
         """
 
-        url = 'https://trader.degiro.nl/trading/secure/logout'
-        url += ';jsessionid=' + self.sess_id
+        url = f'https://trader.degiro.nl/trading/secure/logout;jsessionid={self.sess_id}'
 
-        r = self.sess.get(url)
+        try:
+            self.sess.get(url)
+        except requests.exceptions.RequestException as e:
+            logger.exception('RequestException: {} //////  Traceback: {}'.format(e, traceback.format_exc()))
+            raise e
 
-        # Reset
-        if r.status_code == 200:
-            self.data = None
-            self.sess = None
-            self.sess_id = None
+        # Reset user data
+        self.data = None
+        self.sess = None
+        self.sess_id = None
 
-    def get_config(self) -> int:
+    def get_config(self) -> None:
         """
-        Get configuration data about the user. Some of this data is required for other methods, specifically
-        the intAccount is required for user identification.
-        :return: HTTP Request Status code
+        Get configuration data about the user. Method must be called before other account specific requests
+        are made, since `intAccount` is used for the identification of the user's account in HTTP requests.
+        :raises: RequestException: if HTTP request fails
         """
+
         url = 'https://trader.degiro.nl/pa/secure/client'
         payload = {'sessionId': self.sess_id}
 
-        r = self.sess.get(url, params=payload)
-        if r.status_code != 200:
-            return r.status_code
+        try:
+            r = self.sess.get(url, params=payload)
+        except requests.exceptions.RequestException as e:
+            logger.exception('RequestException: {} //////  Traceback: {}'.format(e, traceback.format_exc()))
+            raise e
 
         data = r.json()
         self.user['intAccount'] = data['data']['intAccount']
@@ -82,17 +96,15 @@ class DegiroAPI:
         self.user['email'] = data['data']['email']
         self.user['firstName'] = data['data']['firstContact']['firstName']
         self.user['lastName'] = data['data']['firstContact']['lastName']
-        self.user['dateOfBirth'] = data['data']['firstContact']['dateOfBirth']
         self.user['streetAddress'] = data['data']['address']['streetAddress']
         self.user['streetAddressNumber'] = data['data']['address']['streetAddressNumber']
-        self.user['zip'] = data['data']['address']['zip']
         self.user['city'] = data['data']['address']['city']
+        self.user['zip'] = data['data']['address']['zip']
+        self.user['dateOfBirth'] = data['data']['firstContact']['dateOfBirth']
         self.user['bic'] = data['data']['bankAccount']['bic']
         self.user['iban'] = data['data']['bankAccount']['iban']
 
-        return r.status_code
-
-    def get_data(self) -> int:
+    def get_data(self) -> None:
         """
         Fetches several data points from the API. In particular, it retrieves:
         - orders
@@ -102,13 +114,16 @@ class DegiroAPI:
         - totalPortfolio
         - alerts
         - cashFunds
-        :returns: HTTP status code
+
+        :raises: RequestException: if HTTP request fails
         """
+
+        # Make sure get_config is called first if not done already
         if len(self.user) == 0:
             self.get_config()
-        url = 'https://trader.degiro.nl/trading/secure/v5/update/'
-        url += str(self.user['intAccount']) + ';'
-        url += 'jsessionid=' + self.sess_id
+
+        url = f"https://trader.degiro.nl/trading/secure/v5/update/{self.user['intAccount']};jsessionid={self.sess_id}"
+
         payload = {
             'portfolio': 0,
             'totalPortfolio': 0,
@@ -121,85 +136,13 @@ class DegiroAPI:
             'sessionId': self.sess_id
         }
 
-        r = self.sess.get(url, params=payload)
+        try:
+            r = self.sess.get(url, params=payload)
+        except requests.exceptions.RequestException as e:
+            logger.exception('RequestException: {} //////  Traceback: {}'.format(e, traceback.format_exc()))
+            raise e
 
-        if r.status_code == 200:
-            self.data = r.json()
-
-        return r.status_code
-
-    def get_cash_funds(self) -> Dict:
-        """
-        Extract the cash funds from self.data.
-        :returns: Dict containing the cash funds in different currencies.
-        """
-        if self.data is None:
-            self.get_data()
-
-        cash_funds = dict()
-
-        for cf in self.data['cashFunds']['value']:
-            entry = dict()
-            for y in cf['value']:
-                # Useful if the currency code is the key to the dict
-                if y['name'] == 'currencyCode':
-                    key = y['value']
-                    continue
-                entry[y['name']] = y['value']
-            cash_funds[key] = entry
-
-        return cash_funds
-
-    def get_portfolio(self) -> Dict:
-        """
-        Extracts portfolio from self.data and enriches it with additional information from Degiro
-        :returns: Portfolio data
-        """
-        if self.data is None:
-            self.get_data()
-
-        portfolio = []
-        for row in self.data['portfolio']['value']:
-            entry = dict()
-            for y in row['value']:
-                k = y['name']
-                v = None
-                if 'value' in y:
-                    v = y['value']
-                entry[k] = v
-            # Also historic equities are returned, let's omit them
-            if entry['size'] != 0:
-                portfolio.append(entry)
-
-        # Restructure portfolio and add extra data
-        portf_n = defaultdict(dict)
-        # Restructuring
-        for r in portfolio:
-            pos_type = r['positionType']
-            pid = r['id']  # Product ID
-            del (r['positionType'])
-            del (r['id'])
-            portf_n[pos_type][pid] = r
-
-        # Adding extra data
-        url = 'https://trader.degiro.nl/product_search/secure/v5/products/info'
-        params = {
-            'intAccount': str(self.user['intAccount']),
-            'sessionId': self.sess_id
-        }
-        header = {'content-type': 'application/json'}
-        pid_list = list(portf_n['PRODUCT'].keys())
-        r = self.sess.post(url, headers=header, params=params, data=json.dumps(pid_list))
-
-        if r.status_code == 200:
-
-            for k, v in r.json()['data'].items():
-                del (v['id'])
-                # Some bonds tend to have a non-unit size
-                portf_n['PRODUCT'][k]['size'] *= v['contractSize']
-                portf_n['PRODUCT'][k].update(v)
-
-        return portf_n
+        self.data = r.json()
 
     def get_account_movements(self, from_date: Union[str, datetime.datetime, datetime.date],
                               to_date: Union[str, datetime.datetime, datetime.date]) -> List[Dict]:
@@ -207,6 +150,7 @@ class DegiroAPI:
         Get all account movements between fromDate and toDate.
         :param from_date: Date (string of format dd/mm/yyyy)
         :param to_date: Date (string of format dd/mm/yyyy)
+        :raises: RequestException: if HTTP request fails
         :return: List of dictionaries representing account movements. Movement type can be identified
           by the 'type' value in each dictionary.
         """
@@ -221,10 +165,11 @@ class DegiroAPI:
             'sessionId': self.sess_id
         }
 
-        r = self.sess.get(url, params=payload)
-
-        if r.status_code != 200:
-            return list()
+        try:
+            r = self.sess.get(url, params=payload)
+        except requests.exceptions.RequestException as e:
+            logger.exception('RequestException: {} //////  Traceback: {}'.format(e, traceback.format_exc()))
+            raise e
 
         data = r.json()
 
@@ -248,6 +193,7 @@ class DegiroAPI:
             if 'productId' in rmov:
                 mov['productId'] = rmov['productId']
             movs.append(mov)
+
         return movs
 
     def get_transactions(self, from_date: Union[str, datetime.datetime, datetime.date],
@@ -256,6 +202,7 @@ class DegiroAPI:
         Get historical transactions between fromDate and toDate.
         :param from_date: Date (string of format dd/mm/yyyy)
         :param to_date: Date (string of format dd/mm/yyyy)
+        :raises: RequestException: if HTTP request fails
         :return: List of dictionaries containing
         """
         from_date = self._get_date_string(from_date)
@@ -266,9 +213,11 @@ class DegiroAPI:
                    'intAccount': self.user['intAccount'],
                    'sessionId': self.sess_id}
 
-        r = self.sess.get(url, params=payload)
-        if r.status_code != 200:
-            return list()
+        try:
+            r = self.sess.get(url, params=payload)
+        except requests.exceptions.RequestException as e:
+            logger.exception('RequestException: {} //////  Traceback: {}'.format(e, traceback.format_exc()))
+            raise e
 
         data = r.json()['data']
         return data
@@ -277,26 +226,33 @@ class DegiroAPI:
         """
         Returns product info for all product Ids provided in the list.
         :param ids: List of product IDs
+        :raises:
+            RequestException: if HTTP request fails
+            KeyError: if response does not contain any data
         :returns: Product info
         """
         url = "https://trader.degiro.nl/product_search/secure/v5/products/info"
         header = {'content-type': 'application/json'}
         params = {'intAccount': str(self.user['intAccount']), 'sessionId': self.sess_id}
-        r = self.sess.post(url, headers=header, params=params, data=json.dumps([str(id) for id in ids]))
 
-        if r.status_code != 200:
-            return dict()
+        try:
+            r = self.sess.post(url, headers=header, params=params, data=json.dumps([str(_id) for _id in ids]))
+        except requests.exceptions.RequestException as e:
+            logger.exception('RequestException: {} //////  Traceback: {}'.format(e, traceback.format_exc()))
+            raise e
 
         try:
             data = r.json()['data']
             return data
-        except KeyError:
-            print('\tKeyError: No data retrieved.')
-            return r.json()
+
+        # Data not retrieved
+        except KeyError as e:
+            logger.exception('RequestException: {} //////  Traceback: {}'.format(e, traceback.format_exc()))
+            raise e
 
     def get_products_by_id(self, product_ids) -> Dict:
         """
-        Wrapper around self.get_product_by_id that allows batch requests.
+        Wrapper around self.get_product_by_id that allows batch requests of up to 10 products at a time.
         :param product_ids: Unique list of product_ids
         :returns: Product info
         """
@@ -320,14 +276,3 @@ class DegiroAPI:
                 return date
             except ValueError as ve:
                 raise ve
-
-
-if __name__ == '__main__':
-    deg = DegiroAPI()
-    deg.login(with2fa=False)
-
-    deg.get_config()
-    for i in ['15885941', '14616228', '14616228', '15885941', '15964254']:
-        deg.get_product_by_id([i])
-
-    int(0)
