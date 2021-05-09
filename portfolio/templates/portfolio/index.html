@@ -21,6 +21,7 @@
 
     <!-- Custom styles for this template-->
     <link href="{% static 'portfolio/css/sb-admin-2.css' %}" rel="stylesheet">
+    <link href="{% static 'portfolio/css/style.css' %}" rel="stylesheet">
 
 </head>
 
@@ -320,14 +321,13 @@
 
                     </div>
 
-                    <!-- Content Row -->
-                    <div class="row">
-                        {# TODO: When print window opens, this should automaticall change into a nicer view! #}
+                    <!-- Content Row of data table... don't print this one -->
+                    <div class="row no-print">
                         <!-- Table -->
                         <div class="col-xl-12 col-lg-12">
                             <div class="card shadow mb-4">
                             <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">DataTables Example</h6>
+                                <h6 class="m-0 font-weight-bold text-primary">Wertpapiere im Portfolio</h6>
                             </div>
                             <div class="card-body">
                                 <div class="table-responsive">
@@ -435,6 +435,8 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.0.2/chart.min.js"></script>
     <script src="https://cdn.datatables.net/v/dt/dt-1.10.24/datatables.min.js"></script>
     <script src="http://ajax.aspnetcdn.com/ajax/jquery.dataTables/1.9.4/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.7.0/js/buttons.print.min.js"></script>
+    <script src="https://cdn.datatables.net/buttons/1.7.0/js/dataTables.buttons.min.js"></script>
 
     <!-- Page level custom scripts -->
     <script src="https://google.github.io/palette.js/palette.js"></script>
@@ -442,8 +444,17 @@
     <script type="text/javascript">
 
         $(document).ready(function() {
-          $('#dataTable').DataTable();
+          $('#dataTable').DataTable({
+                dom: 'Bfrtip',
+                buttons: [
+                    'print'
+                ]
+            });
         });
+
+        window.onafterprint = function(){
+           console.log("Printing completed...");
+        }
 
         var allocationLabels = {{ allocation_labels | safe }}
         var allocationData = {{ allocation_data | safe }}
