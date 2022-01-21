@@ -7,7 +7,7 @@ django-db-logger==0.1.10
 django-tables2==2.3.1
 dynaconf==3.1.4
 django-extensions==3.0.9
-ipython==7.18.1
+ipython==7.31.1
 djangorestframework==3.12.2
 markdown==3.3.4
 
